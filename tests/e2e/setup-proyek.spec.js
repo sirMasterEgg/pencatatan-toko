@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { login } from './helpers.js';
 
 test.describe('Tugas 01: setup proyek', () => {
     test('beranda menampilkan judul dan gaya Bootstrap', async ({ page }) => {
+        await login(page);
         const response = await page.goto('/');
 
         expect(response.status()).toBe(200);
@@ -18,11 +20,11 @@ test.describe('Tugas 01: setup proyek', () => {
     });
 
     test('halaman memakai bahasa Indonesia dan viewport HP', async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/login');
 
         await expect(page.locator('html')).toHaveAttribute('lang', 'id');
         await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', /width=device-width/);
-        // Belum login: navbar tidak tampil.
+        // Tamu: navbar tidak tampil.
         await expect(page.locator('nav.navbar')).toHaveCount(0);
         // Tidak ada guliran horizontal di layar HP.
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);

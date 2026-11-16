@@ -1,6 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const port = 8001;
+const ownerPassword = 'rahasia-e2e-123';
+const e2eEnv = {
+    DB_CONNECTION: 'sqlite',
+    DB_DATABASE: 'database/e2e.sqlite',
+    OWNER_EMAIL: 'pemilik@toko.test',
+    OWNER_PASSWORD: ownerPassword,
+    SESSION_DRIVER: 'file',
+    CACHE_STORE: 'file',
+    APP_ENV: 'local',
+};
 
 export default defineConfig({
     testDir: './tests/e2e',
@@ -18,7 +28,8 @@ export default defineConfig({
         },
     },
     webServer: {
-        command: `php artisan serve --host=127.0.0.1 --port=${port}`,
+        command: `touch database/e2e.sqlite && php artisan migrate:fresh --seed --force && php artisan serve --host=127.0.0.1 --port=${port}`,
+        env: e2eEnv,
         url: `http://127.0.0.1:${port}`,
         reuseExistingServer: !process.env.CI,
         timeout: 60_000,
