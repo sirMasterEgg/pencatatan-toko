@@ -25,8 +25,8 @@ test.describe('Tugas 03: login', () => {
         await expect(page.getByRole('heading', { name: 'Beranda', level: 1 })).toBeVisible();
 
         await page.getByRole('button', { name: 'Buka menu' }).click();
-        await expect(page.getByRole('link', { name: 'Transaksi' })).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Barang' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Transaksi', exact: true })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Barang', exact: true })).toBeVisible();
 
         await page.getByRole('button', { name: 'Keluar' }).click();
         await expect(page).toHaveURL(/\/login$/);
