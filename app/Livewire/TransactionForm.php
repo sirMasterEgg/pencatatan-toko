@@ -303,7 +303,7 @@ class TransactionForm extends Component
 
         session()->flash('success', 'Transaksi '.$transaction->number.' berhasil disimpan.');
 
-        return $this->redirect(url('/transactions/'.$transaction->id));
+        return $this->redirect(route('transactions.show', $transaction));
     }
 
     public function render()

@@ -31,4 +31,24 @@ test('form transaksi: barang baru, pelanggan baru, total, simpan', async ({ page
 
     await page.getByRole('button', { name: 'Simpan transaksi' }).click();
     await page.waitForURL(/\/transactions\/\d+$/);
+
+    // Tugas 08: detail, status bayar, daftar/filter, batal.
+    await expect(page.getByText(/Transaksi TRX-\d{8}-\d{3} berhasil disimpan\./)).toBeVisible();
+    await expect(page.getByText(name).first()).toBeVisible();
+
+    await page.getByLabel('Status bayar', { exact: true }).selectOption('unpaid');
+    await page.getByRole('button', { name: 'Simpan status bayar' }).click();
+    await expect(page.getByText('Status bayar diperbarui.')).toBeVisible();
+
+    await page.goto('/transactions?payment_status=unpaid');
+    await expect(page.getByRole('link', { name: /TRX-\d{8}-\d{3}/ }).first()).toBeVisible();
+    const overflowList = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+    expect(overflowList).toBe(false);
+
+    await page.getByRole('link', { name: /TRX-\d{8}-\d{3}/ }).first().click();
+    page.once('dialog', (d) => d.accept());
+    await page.getByPlaceholder('Alasan pembatalan (opsional)').fill('Uji e2e');
+    await page.getByRole('button', { name: 'Batalkan transaksi' }).click();
+    await expect(page.getByText('Transaksi dibatalkan.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Batalkan transaksi' })).toHaveCount(0);
 });

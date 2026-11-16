@@ -19,7 +19,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/', fn () => view('dashboard'))->name('dashboard');
 
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::get('/transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
+    Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
+    Route::post('/transactions/{transaction}/cancel', [TransactionController::class, 'cancel'])->name('transactions.cancel');
+    Route::post('/transactions/{transaction}/payment-status', [TransactionController::class, 'updatePaymentStatus'])->name('transactions.payment-status');
 
     Route::resource('customers', CustomerController::class);
 
