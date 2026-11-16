@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPriceController;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     Route::get('/', fn () => view('dashboard'))->name('dashboard');
+
+    Route::resource('customers', CustomerController::class);
 
     Route::resource('products', ProductController::class)->except(['destroy']);
     Route::post('/products/{product}/prices', [ProductPriceController::class, 'store'])->name('products.prices.store');

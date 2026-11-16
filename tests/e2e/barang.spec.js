@@ -1,9 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers.js';
 
 test('barang: tambah, lihat detail, tambah harga, ubah nama', async ({ page }) => {
     const name = `Gula E2E ${Date.now()}`;
-    await login(page);
 
     await page.goto('/products/create');
     await page.getByLabel('Nama').fill(name);

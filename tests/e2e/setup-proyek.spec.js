@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers.js';
 
 test.describe('Tugas 01: setup proyek', () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test.describe('terautentikasi', () => {
+    test.use({ storageState: 'tests/e2e/.auth/owner.json' });
     test('beranda menampilkan judul dan gaya Bootstrap', async ({ page }) => {
-        await login(page);
         const response = await page.goto('/');
 
         expect(response.status()).toBe(200);
@@ -17,6 +19,7 @@ test.describe('Tugas 01: setup proyek', () => {
 
         const fontSize = await page.evaluate(() => getComputedStyle(document.querySelector('h1')).fontSize);
         expect(fontSize).not.toBe('32px'); // .h4 Bootstrap = 1.5rem (24px), bukan h1 bawaan browser
+    });
     });
 
     test('halaman memakai bahasa Indonesia dan viewport HP', async ({ page }) => {

@@ -18,10 +18,18 @@ export default defineConfig({
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 1 : 0,
     reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
+    projects: [
+        { name: 'setup', testMatch: /auth\.setup\.js/, use: { ...devices['Pixel 5'] } },
+        {
+            name: 'e2e',
+            testIgnore: /auth\.setup\.js/,
+            dependencies: ['setup'],
+            use: { ...devices['Pixel 5'], storageState: 'tests/e2e/.auth/owner.json' },
+        },
+    ],
     use: {
         baseURL: `http://127.0.0.1:${port}`,
         trace: 'off',
-        ...devices['Pixel 5'],
         launchOptions: {
             executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined,
             args: ['--no-sandbox'],

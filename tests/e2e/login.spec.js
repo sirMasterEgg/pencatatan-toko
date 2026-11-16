@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { login, owner } from './helpers.js';
 
 test.describe('Tugas 03: login', () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
     test('tamu dialihkan ke halaman masuk', async ({ page }) => {
         await page.goto('/');
         await expect(page).toHaveURL(/\/login$/);
