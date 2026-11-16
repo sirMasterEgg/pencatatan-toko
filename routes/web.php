@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPriceController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -17,6 +18,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     Route::get('/', fn () => view('dashboard'))->name('dashboard');
+
+    Route::get('/transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
 
     Route::resource('customers', CustomerController::class);
 
