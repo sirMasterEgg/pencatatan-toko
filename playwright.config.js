@@ -8,13 +8,14 @@ const e2eEnv = {
     OWNER_EMAIL: 'pemilik@toko.test',
     OWNER_PASSWORD: ownerPassword,
     SESSION_DRIVER: 'file',
-    CACHE_STORE: 'file',
+    CACHE_STORE: 'array',
     APP_ENV: 'local',
 };
 
 export default defineConfig({
     testDir: './tests/e2e',
-    fullyParallel: true,
+    fullyParallel: false,
+    workers: 1, // semua tes berbagi satu sesi login; paralel membuat pesan flash saling menimpa
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 1 : 0,
     reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
