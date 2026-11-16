@@ -11,7 +11,7 @@ test.describe('Tugas 01: setup proyek', () => {
         expect(response.status()).toBe(200);
         await expect(page).toHaveTitle('Beranda - Catatan Toko');
         await expect(page.getByRole('heading', { name: 'Beranda', level: 1 })).toBeVisible();
-        await expect(page.getByText('Halaman ini dilengkapi di tugas 09.')).toBeVisible();
+        await expect(page.getByRole('link', { name: '+ Transaksi baru' })).toBeVisible();
 
         // Bootstrap termuat: .container mendapat lebar/padding dari Bootstrap, bg-light berwarna.
         const bodyBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
