@@ -4,7 +4,12 @@
 
 @section('content')
     @php($cancelled = $transaction->status === \App\Enums\TransactionStatus::Cancelled)
+    @php($draft = $transaction->status === \App\Enums\TransactionStatus::Draft)
     <h1 class="h4 mb-3">{{ $transaction->number }}</h1>
+
+    @if ($draft)
+        <div class="alert alert-secondary">Ini draf. Draf belum masuk laporan sampai disimpan sebagai transaksi.</div>
+    @endif
 
     @if ($cancelled)
         <div class="alert alert-danger">
@@ -69,7 +74,17 @@
         </li>
     </ul>
 
-    @unless ($cancelled)
+    @if ($transaction->isEditable())
+        <a href="{{ route('transactions.edit', $transaction) }}" class="btn btn-primary w-100 mb-3">Ubah transaksi</a>
+    @endif
+
+    @if ($draft)
+        <form method="POST" action="{{ route('transactions.destroy', $transaction) }}" onsubmit="return confirm('Hapus draf ini? Tindakan ini tidak bisa dibatalkan.')">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-outline-danger w-100">Hapus draf</button>
+        </form>
+    @elseif (! $cancelled)
         <div class="card mb-3">
             <div class="card-body">
                 <form method="POST" action="{{ route('transactions.payment-status', $transaction) }}" class="mb-3">
@@ -88,8 +103,12 @@
                     <input type="text" name="reason" class="form-control mb-2" placeholder="Alasan pembatalan (opsional)" aria-label="Alasan pembatalan">
                     <button type="submit" class="btn btn-danger w-100">Batalkan transaksi</button>
                 </form>
-                <p class="small text-muted mt-2 mb-0">Transaksi yang sudah disimpan tidak bisa diubah. Untuk koreksi, batalkan lalu buat transaksi baru.</p>
+                @if ($transaction->isEditable())
+                    <p class="small text-muted mt-2 mb-0">Transaksi ini masih bisa diubah selama status bayarnya Belum bayar.</p>
+                @else
+                    <p class="small text-muted mt-2 mb-0">Transaksi yang sudah dibayar tidak bisa diubah. Untuk koreksi, ubah status bayar ke Belum bayar, atau batalkan lalu buat transaksi baru.</p>
+                @endif
             </div>
         </div>
-    @endunless
+    @endif
 @endsection

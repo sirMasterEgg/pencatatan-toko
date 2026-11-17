@@ -2,7 +2,7 @@
 
 Aplikasi pencatatan penjualan untuk satu toko kecil, dipakai pemilik lewat HP. Prinsipnya transaction-first: pemilik langsung mencatat transaksi, dan barang serta harga yang belum ada dibuat di layar transaksi yang sama.
 
-Status: **tahap 1 selesai** (Tugas 01 sampai 11 di `docs/instruksi/`).
+Status: **tahap 1 selesai** (Tugas 01 sampai 16 di `docs/instruksi/`).
 
 ## Tech stack
 
@@ -67,6 +67,10 @@ Tes e2e berjalan dengan satu worker dan emulasi layar HP, karena semua tes berba
 - **Barang dan riwayat harga**: tambah, ubah, cari, tandai sudah diperiksa. Harga adalah riwayat: perubahan harga menambah baris baru, baris lama tidak diubah. Barang tidak bisa dihapus, hanya dinonaktifkan
 - **Pelanggan**: tambah, ubah, cari, hapus (jika belum punya transaksi). Nomor HP dinormalkan ke format `62...` dan tidak boleh ganda
 - **Tambah beruntun**: form tambah barang dan tambah pelanggan punya tombol "Simpan" (kembali ke daftar) dan "Simpan dan tambah lagi" (membuka form kosong lagi)
+- **Jumlah desimal**: kg, gram, liter, dan meter boleh desimal (contoh `0,5`). Koma dan titik sama-sama tanda desimal. Satuan lain wajib bilangan bulat
+- **Titik ribuan**: kolom harga, harga modal, dan diskon langsung diberi titik saat diketik (`15000` menjadi `15.000`)
+- **Nama barang huruf besar**: nama barang selalu disimpan dalam huruf besar
+- **Draf dan ubah transaksi**: transaksi bisa disimpan sebagai draf (tidak masuk laporan, bisa dihapus). Transaksi yang belum dibayar bisa diubah. Setelah dibayar sebagian atau lunas, isinya terkunci
 - **Transaksi baru**: form Livewire untuk mencari barang, membuat barang baru beserta harganya, memilih atau membuat pelanggan, lalu menyimpan semuanya sekaligus dalam satu transaksi database. Barang dari form berstatus "Perlu dirapikan"
 - **Daftar dan detail transaksi**: filter tanggal, status, status bayar, dan pencarian. Transaksi bisa dibatalkan dan status bayarnya bisa diubah. Isi transaksi yang sudah disimpan tidak bisa diubah
 - **Beranda dan laporan harian**: omzet, jumlah transaksi, rata-rata nota, piutang, rekap per saluran, dan barang terlaris. Hanya transaksi yang dikonfirmasi yang dihitung
@@ -80,7 +84,7 @@ Tes e2e berjalan dengan satu worker dan emulasi layar HP, karena semua tes berba
 - Pendaftaran pengguna, lupa kata sandi, peran dan hak akses
 - Mode offline, PWA
 - API JSON
-- Ubah atau hapus transaksi, grafik
+- Hapus transaksi yang sudah dikonfirmasi, grafik
 
 ## Struktur proyek
 
@@ -111,7 +115,7 @@ Semua rute selain `/login` wajib login.
 | Beranda | `GET /` |
 | Barang | `/products` (daftar, tambah, detail, ubah), `POST /products/{id}/prices`, `POST /products/{id}/mark-reviewed` |
 | Pelanggan | `/customers` (resource lengkap) |
-| Transaksi | `GET /transactions`, `GET /transactions/create`, `GET /transactions/{id}`, `POST /transactions/{id}/cancel`, `POST /transactions/{id}/payment-status` |
+| Transaksi | `GET /transactions`, `GET /transactions/create`, `GET /transactions/{id}`, `GET /transactions/{id}/edit`, `DELETE /transactions/{id}` (hanya draf), `POST /transactions/{id}/cancel`, `POST /transactions/{id}/payment-status` |
 | Laporan | `GET /reports/daily` |
 
 Daftar lengkap ada di `php artisan route:list`.

@@ -36,12 +36,12 @@
                 @csrf
                 <div class="mb-2">
                     <label for="sell_price" class="form-label">Harga jual</label>
-                    <input type="number" id="sell_price" name="sell_price" value="{{ old('sell_price') }}" min="0" step="1" inputmode="numeric" class="form-control @error('sell_price') is-invalid @enderror" required>
+                    <input type="text" id="sell_price" name="sell_price" value="{{ \App\Support\Format::thousands(old('sell_price')) }}" inputmode="numeric" autocomplete="off" data-rupiah class="form-control @error('sell_price') is-invalid @enderror" required>
                     @error('sell_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="mb-2">
                     <label for="cost_price" class="form-label">Harga modal</label>
-                    <input type="number" id="cost_price" name="cost_price" value="{{ old('cost_price', $product->currentPrice?->cost_price) }}" min="0" step="1" inputmode="numeric" class="form-control @error('cost_price') is-invalid @enderror">
+                    <input type="text" id="cost_price" name="cost_price" value="{{ \App\Support\Format::thousands(old('cost_price', $product->currentPrice?->cost_price)) }}" inputmode="numeric" autocomplete="off" data-rupiah class="form-control @error('cost_price') is-invalid @enderror">
                     @error('cost_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="mb-3">

@@ -60,6 +60,8 @@
                         <span>{{ $transaction->customer?->name ?? 'Pembeli umum' }}</span>
                         @if ($cancelled)
                             <span class="badge text-bg-danger">{{ $transaction->status->label() }}</span>
+                        @elseif ($transaction->status === \App\Enums\TransactionStatus::Draft)
+                            <span class="badge text-bg-secondary">{{ $transaction->status->label() }}</span>
                         @endif
                         @include('transactions._payment_badge', ['status' => $transaction->payment_status])
                     </div>

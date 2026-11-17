@@ -8,6 +8,7 @@ use App\Enums\ProductStatus;
 use App\Enums\TransactionStatus;
 use App\Models\Product;
 use App\Models\Transaction;
+use App\Support\Parse;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -26,81 +27,147 @@ class TransactionService
         return (int) round((float) $quantity * $unitPrice) - $discount;
     }
 
-    public function create(array $data): Transaction
+    public function create(array $data, TransactionStatus $status = TransactionStatus::Confirmed): Transaction
     {
+        $this->assertSavableStatus($status);
+        $data = $this->normalize($data);
         $this->validate($data);
 
-        return DB::transaction(function () use ($data) {
-            $customerId = $this->resolveCustomerId($data['customer'] ?? null);
-
+        return DB::transaction(function () use ($data, $status) {
             $transactedAt = Carbon::parse($data['transacted_at']);
 
             $transaction = Transaction::create([
                 'number' => $this->generateNumber($transactedAt),
                 'transacted_at' => $transactedAt,
-                'customer_id' => $customerId,
+                'customer_id' => $this->resolveCustomerId($data['customer'] ?? null),
                 'channel' => $data['channel'],
                 'input_source' => 'form',
-                'status' => TransactionStatus::Confirmed,
+                'status' => $status,
                 'payment_status' => $data['payment_status'],
                 'total' => 0,
                 'note' => $data['note'] ?? null,
             ]);
 
-            $total = 0;
+            $transaction->update(['total' => $this->createItems($transaction, $data['items'])]);
 
-            foreach ($data['items'] as $index => $item) {
-                $unitPrice = (int) $item['unit_price'];
-                $discount = (int) ($item['discount'] ?? 0);
-                $priceMode = $item['price_mode'] ?? 'this_only';
+            return $transaction->load('items.product', 'customer');
+        });
+    }
 
-                if (! empty($item['product_id'])) {
-                    $product = Product::with('currentPrice')->findOrFail($item['product_id']);
-                    $this->assertSelectable($product, $index);
-                    $listPrice = $this->applyExistingProduct($product, $unitPrice, $priceMode, $transaction);
-                } else {
-                    $new = $item['new_product'];
-                    $product = $this->products->findByNameAndUnit($new['name'], $new['unit']);
+    public function update(Transaction $transaction, array $data, TransactionStatus $status): Transaction
+    {
+        if (! $transaction->isEditable()) {
+            throw ValidationException::withMessages(['status' => 'Transaksi ini tidak bisa diubah karena sudah dibayar atau dibatalkan.']);
+        }
 
-                    if ($product) {
-                        $product->load('currentPrice');
-                        $listPrice = $this->applyExistingProduct($product, $unitPrice, 'this_only', $transaction);
-                    } else {
-                        $product = $this->products->create(
-                            name: $new['name'],
-                            unit: $new['unit'],
-                            sellPrice: $unitPrice,
-                            costPrice: isset($new['cost_price']) && $new['cost_price'] !== '' ? (int) $new['cost_price'] : null,
-                            status: ProductStatus::NeedsReview,
-                            sourceTransactionId: $transaction->id,
-                        );
-                        $listPrice = null;
-                    }
-                }
+        $this->assertSavableStatus($status);
 
-                $subtotal = self::calculateSubtotal($item['quantity'], $unitPrice, $discount);
+        if ($transaction->status === TransactionStatus::Confirmed && $status === TransactionStatus::Draft) {
+            throw ValidationException::withMessages(['status' => 'Transaksi yang sudah dikonfirmasi tidak bisa dijadikan draf.']);
+        }
 
-                if ($subtotal < 0) {
-                    throw ValidationException::withMessages(["items.{$index}.discount" => 'Diskon melebihi nilai baris.']);
-                }
+        $data = $this->normalize($data);
+        $this->validate($data);
 
-                $transaction->items()->create([
-                    'product_id' => $product->id,
-                    'quantity' => $item['quantity'],
-                    'unit' => $product->unit,
-                    'unit_price' => $unitPrice,
-                    'list_price' => $listPrice,
-                    'discount' => $discount,
-                    'subtotal' => $subtotal,
-                ]);
+        return DB::transaction(function () use ($transaction, $data, $status) {
+            // Barang yang lahir dari transaksi ini tetap ditandai "Barang baru" (list_price null).
+            $newProductIds = $transaction->items()->whereNull('list_price')->pluck('product_id')->all();
 
-                $total += $subtotal;
-            }
+            $transaction->items()->delete();
 
+            $transaction->update([
+                'transacted_at' => Carbon::parse($data['transacted_at']),
+                'customer_id' => $this->resolveCustomerId($data['customer'] ?? null),
+                'channel' => $data['channel'],
+                'status' => $status,
+                'payment_status' => $data['payment_status'],
+                'note' => $data['note'] ?? null,
+            ]);
+
+            $total = $this->createItems($transaction, $data['items']);
+
+            $transaction->items()->whereIn('product_id', $newProductIds)->update(['list_price' => null]);
             $transaction->update(['total' => $total]);
 
             return $transaction->load('items.product', 'customer');
         });
+    }
+
+    public function deleteDraft(Transaction $transaction): void
+    {
+        if ($transaction->status !== TransactionStatus::Draft) {
+            throw ValidationException::withMessages(['status' => 'Hanya draf yang bisa dihapus.']);
+        }
+
+        DB::transaction(function () use ($transaction) {
+            $transaction->items()->delete();
+            $transaction->delete();
+        });
+    }
+
+    /**
+     * Membuat semua item untuk transaksi dan mengembalikan totalnya.
+     */
+    private function createItems(Transaction $transaction, array $items): int
+    {
+        $total = 0;
+
+        foreach ($items as $index => $item) {
+            $unitPrice = (int) $item['unit_price'];
+            $discount = (int) ($item['discount'] ?? 0);
+            $priceMode = $item['price_mode'] ?? 'this_only';
+
+            if (! empty($item['product_id'])) {
+                $product = Product::with('currentPrice')->findOrFail($item['product_id']);
+                $this->assertSelectable($product, $index);
+                $listPrice = $this->applyExistingProduct($product, $unitPrice, $priceMode, $transaction);
+            } else {
+                $new = $item['new_product'];
+                $product = $this->products->findByNameAndUnit($new['name'], $new['unit']);
+
+                if ($product) {
+                    $product->load('currentPrice');
+                    $listPrice = $this->applyExistingProduct($product, $unitPrice, 'this_only', $transaction);
+                } else {
+                    $product = $this->products->create(
+                        name: $new['name'],
+                        unit: $new['unit'],
+                        sellPrice: $unitPrice,
+                        costPrice: isset($new['cost_price']) && $new['cost_price'] !== '' ? (int) $new['cost_price'] : null,
+                        status: ProductStatus::NeedsReview,
+                        sourceTransactionId: $transaction->id,
+                    );
+                    $listPrice = null;
+                }
+            }
+
+            $subtotal = self::calculateSubtotal($item['quantity'], $unitPrice, $discount);
+
+            if ($subtotal < 0) {
+                throw ValidationException::withMessages(["items.{$index}.discount" => 'Diskon melebihi nilai baris.']);
+            }
+
+            $transaction->items()->create([
+                'product_id' => $product->id,
+                'quantity' => $item['quantity'],
+                'unit' => $product->unit,
+                'unit_price' => $unitPrice,
+                'list_price' => $listPrice,
+                'discount' => $discount,
+                'subtotal' => $subtotal,
+            ]);
+
+            $total += $subtotal;
+        }
+
+        return $total;
+    }
+
+    private function assertSavableStatus(TransactionStatus $status): void
+    {
+        if (! in_array($status, [TransactionStatus::Draft, TransactionStatus::Confirmed], true)) {
+            throw ValidationException::withMessages(['status' => 'Status simpan harus draf atau dikonfirmasi.']);
+        }
     }
 
     public function cancel(Transaction $transaction, ?string $reason = null): Transaction
@@ -181,6 +248,17 @@ class TransactionService
         return $prefix.str_pad((string) $sequence, 3, '0', STR_PAD_LEFT);
     }
 
+    private function normalize(array $data): array
+    {
+        foreach ($data['items'] ?? [] as $index => $item) {
+            if (is_array($item) && array_key_exists('quantity', $item)) {
+                $data['items'][$index]['quantity'] = Parse::quantity($item['quantity']);
+            }
+        }
+
+        return $data;
+    }
+
     private function validate(array $data): void
     {
         $rules = [
@@ -202,7 +280,7 @@ class TransactionService
             'items.*.new_product.name' => ['required_without:items.*.product_id', 'nullable', 'string', 'max:255'],
             'items.*.new_product.unit' => ['required_without:items.*.product_id', 'nullable', Rule::in(config('shop.units'))],
             'items.*.new_product.cost_price' => ['nullable', 'integer', 'min:0'],
-            'items.*.quantity' => ['required', 'numeric', 'gt:0'],
+            'items.*.quantity' => ['required', 'numeric', 'gt:0', 'decimal:0,3'],
             'items.*.unit_price' => ['required', 'integer', 'min:0'],
             'items.*.discount' => ['nullable', 'integer', 'min:0'],
             'items.*.price_mode' => ['nullable', Rule::in(['this_only', 'new_price'])],
@@ -212,6 +290,7 @@ class TransactionService
             'items.required' => 'Transaksi harus punya minimal satu barang.',
             'items.min' => 'Transaksi harus punya minimal satu barang.',
             'transacted_at.before_or_equal' => 'Tanggal transaksi tidak boleh di masa depan.',
+            'items.*.quantity.decimal' => 'Jumlah paling banyak 3 angka di belakang koma.',
         ];
 
         $attributes = [
@@ -228,11 +307,19 @@ class TransactionService
         $errors = [];
 
         foreach ($data['items'] as $index => $item) {
+            $unit = $item['new_product']['unit'] ?? null;
+
             if (! empty($item['product_id'])) {
                 $product = Product::find($item['product_id']);
+                $unit = $product?->unit;
                 if ($product && ! in_array($product->status, [ProductStatus::Active, ProductStatus::NeedsReview], true)) {
                     $errors["items.{$index}.product_id"] = 'Barang ini sudah tidak aktif.';
                 }
+            }
+
+            $quantity = (float) $item['quantity'];
+            if ($unit !== null && ! in_array($unit, config('shop.decimal_units'), true) && floor($quantity) !== $quantity) {
+                $errors["items.{$index}.quantity"] = "Jumlah untuk satuan {$unit} harus bilangan bulat.";
             }
 
             $subtotal = self::calculateSubtotal($item['quantity'], (int) $item['unit_price'], (int) ($item['discount'] ?? 0));

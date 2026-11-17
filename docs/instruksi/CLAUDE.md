@@ -4,7 +4,7 @@ Aplikasi pencatatan penjualan untuk satu toko kecil, dipakai pemilik lewat HP. P
 
 ## Cara kerja di proyek ini
 
-- Pekerjaan dibagi menjadi file tugas di `docs/instruksi/`, bernomor `01` sampai `11`. Kerjakan satu file tugas dalam satu waktu, sesuai urutan.
+- Pekerjaan dibagi menjadi file tugas di `docs/instruksi/`, bernomor `01` sampai `16`. Kerjakan satu file tugas dalam satu waktu, sesuai urutan.
 - Sebelum mengerjakan tugas, baca `docs/instruksi/00-aturan-umum.md`. File itu memuat kamus istilah lengkap dan daftar semua rute.
 - Kerjakan persis yang tertulis di file tugas. Jangan menambah fitur, paket, tabel, atau kolom.
 - Jika instruksi tidak bisa dijalankan atau saling bertentangan, berhenti dan laporkan. Jangan mengarang jalan keluar.
@@ -57,6 +57,9 @@ Livewire 4:
 - Uang disimpan sebagai bilangan bulat rupiah. Jangan memakai `float` atau `decimal` untuk uang.
 - Tampilkan uang dengan `App\Support\Format::rupiah()` dan jumlah barang dengan `Format::quantity()`.
 - Normalkan nomor HP dengan `App\Support\Phone::normalize()` sebelum disimpan atau dicari.
+- Rapikan isian form dengan `App\Support\Parse::quantity()` (jumlah, koma = desimal) dan `Parse::rupiah()` (uang, titik ribuan dibuang).
+- Kolom uang: `type="text"`, `inputmode="numeric"`, `data-rupiah`, nilai awal `Format::thousands()`. Jangan `type="number"` untuk uang atau jumlah.
+- Nama barang huruf besar lewat `ProductService::normalizeName()`.
 - Zona waktu `Asia/Jakarta`. Format tanggal di layar `d/m/Y H:i`.
 - Nilai status memakai enum di `app/Enums`, masing-masing punya `label()`.
 - Controller tipis: validasi, panggil service atau model, kembalikan view atau redirect.
@@ -73,19 +76,23 @@ Livewire 4:
 5. Barang dari form transaksi berstatus `needs_review`. Barang dari halaman barang berstatus `active`.
 6. Harga yang diubah di form transaksi bawaannya hanya untuk nota itu. Riwayat harga bertambah hanya jika pengguna memilih "Jadikan harga baru".
 7. Simpan transaksi bersifat utuh, di dalam satu `DB::transaction`.
-8. Transaksi `confirmed` tidak bisa diubah isinya. Hanya bisa dibatalkan atau diubah status bayarnya.
+8. Isi transaksi hanya bisa diubah jika `Transaction::isEditable()`: `draft`, atau `confirmed` dengan status bayar `unpaid`. Setelah `partial` atau `paid`, terkunci. `cancelled` tidak pernah bisa diubah.
 9. Laporan hanya menghitung transaksi `confirmed`.
 10. Barang yang sudah dipakai di transaksi tidak bisa dihapus dan satuannya tidak bisa diubah.
 11. Nomor HP pelanggan unik setelah dinormalkan.
+12. Jumlah desimal (maks 3 angka) hanya untuk satuan di `config('shop.decimal_units')`. Satuan lain bilangan bulat.
+13. Hanya draf yang boleh dihapus. Draf tidak masuk laporan.
 
 ## Batas tanggung jawab kelas
 
 | Kelas | Satu-satunya tempat untuk |
 |---|---|
-| `App\Services\TransactionService` | membuat `Transaction` dan `TransactionItem`, membatalkan, mengubah status bayar, rumus subtotal |
-| `App\Services\ProductService` | membuat `Product` dan `ProductPrice` |
+| `App\Services\TransactionService` | membuat (`confirmed` atau `draft`), mengubah, dan menghapus draf `Transaction` dan `TransactionItem`, membatalkan, mengubah status bayar, rumus subtotal |
+| `App\Services\ProductService` | membuat `Product` dan `ProductPrice`, merapikan nama barang (`normalizeName`) |
 | `App\Services\CustomerService` | mencari atau membuat `Customer` dari form transaksi |
 | `App\Support\Format` | `number_format` |
+| `App\Support\Parse` | mengubah isian form (jumlah, uang) menjadi angka |
+| `App\Models\Transaction::isEditable()` | aturan kapan transaksi boleh diubah |
 | `App\Livewire\TransactionForm` | keadaan dan tampilan form transaksi. Tidak menyimpan data sendiri |
 
 ## Struktur folder
@@ -96,8 +103,8 @@ app/Http/Controllers/ satu controller per bagian
 app/Livewire/         TransactionForm
 app/Models/           Product, ProductPrice, Customer, Transaction, TransactionItem, User
 app/Services/         ProductService, CustomerService, TransactionService, DailyReportService
-app/Support/          Format, Phone
-config/shop.php       daftar satuan dan data akun pemilik
+app/Support/          Format, Parse, Phone
+config/shop.php       daftar satuan, satuan desimal, dan data akun pemilik
 resources/views/      layouts, auth, products, customers, transactions, reports, livewire
 tests/Feature/        satu file tes per bagian
 tests/e2e/            tes Playwright
@@ -116,12 +123,13 @@ docs/instruksi/       file tugas
 | Harga saat itu | `unit_price` |
 | Harga daftar | `list_price` |
 | Perlu dirapikan | `needs_review` |
+| Draf | `draft` |
 
 Kamus lengkap ada di `docs/instruksi/00-aturan-umum.md`.
 
 ## Di luar lingkup
 
-Jangan membuat hal berikut walaupun terlihat berguna: stok dan pembelian, unggah foto nota, pembacaan chat WhatsApp, antrean review, gabung barang, ekspor, cetak struk, grafik, pendaftaran pengguna, lupa kata sandi, hak akses, mode offline, API JSON, ubah atau hapus transaksi.
+Jangan membuat hal berikut walaupun terlihat berguna: stok dan pembelian, unggah foto nota, pembacaan chat WhatsApp, antrean review, gabung barang, ekspor, cetak struk, grafik, pendaftaran pengguna, lupa kata sandi, hak akses, mode offline, API JSON, menghapus transaksi yang bukan draf.
 
 ## Larangan
 

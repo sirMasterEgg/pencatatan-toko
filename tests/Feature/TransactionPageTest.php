@@ -83,7 +83,7 @@ class TransactionPageTest extends TestCase
 
         $this->get("/transactions/{$t->id}")
             ->assertOk()
-            ->assertSee('Gula Pasir')
+            ->assertSee('GULA PASIR')
             ->assertSee('Rp18.000')
             ->assertSee('Bu Sari');
     }

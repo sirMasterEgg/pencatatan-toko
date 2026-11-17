@@ -23,6 +23,7 @@ Yang dibuat:
 - Pelanggan.
 - Transaksi penjualan dan itemnya.
 - Laporan harian.
+- Draf transaksi, dan mengubah transaksi yang belum dibayar (sejak tugas 15 dan 16).
 
 Yang TIDAK dibuat. Jangan membuatnya walaupun terlihat berguna:
 
@@ -33,6 +34,7 @@ Yang TIDAK dibuat. Jangan membuatnya walaupun terlihat berguna:
 - Pendaftaran pengguna, lupa kata sandi, peran dan hak akses.
 - Mode offline, PWA.
 - API JSON.
+- Menghapus transaksi yang sudah dikonfirmasi atau dibatalkan. Yang boleh dihapus hanya draf.
 
 ## 4. Tech stack
 
@@ -81,6 +83,9 @@ Livewire 4:
 - Uang ditampilkan dengan `App\Support\Format::rupiah()`. Contoh hasil: `Rp248.000`.
 - Jumlah barang ditampilkan dengan `App\Support\Format::quantity()`. Contoh hasil: `2` dan `0,5`.
 - Nomor HP dinormalkan dengan `App\Support\Phone::normalize()` sebelum disimpan atau dicari.
+- Isian angka dari form dirapikan dengan `App\Support\Parse` sebelum divalidasi: `Parse::quantity()` untuk jumlah (koma dan titik sama-sama tanda desimal, sejak tugas 12) dan `Parse::rupiah()` untuk uang (titik ribuan dibuang, sejak tugas 13).
+- Kolom uang di form memakai `type="text"`, `inputmode="numeric"`, dan atribut `data-rupiah`, dengan nilai awal dari `Format::thousands()`. Kolom jumlah memakai `type="text"`. Jangan memakai `type="number"` untuk uang atau jumlah (sejak tugas 12 dan 13).
+- Nama barang disimpan dalam huruf besar lewat `ProductService::normalizeName()` (sejak tugas 14).
 - Zona waktu aplikasi `Asia/Jakarta`. Tanggal ditampilkan dengan format `d/m/Y H:i`.
 - Nilai status memakai enum PHP di `app/Enums`. Jangan menulis teks status langsung di banyak tempat.
 - Controller tipis: validasi, panggil service atau model, kembalikan view atau redirect.
@@ -148,10 +153,12 @@ Dokumen desain memakai bahasa Indonesia. Kode memakai bahasa Inggris.
 5. Barang yang dibuat dari form transaksi berstatus `needs_review`. Barang yang dibuat dari halaman barang berstatus `active`.
 6. Jika harga barang lama diubah di form transaksi, bawaannya hanya berlaku untuk nota itu. Riwayat harga bertambah hanya jika pengguna memilih "Jadikan harga baru".
 7. Simpan transaksi bersifat utuh: barang baru, harga baru, pelanggan baru, transaksi, dan itemnya tersimpan semua atau tidak sama sekali.
-8. Transaksi berstatus `confirmed` tidak bisa diubah isinya. Yang boleh hanya dibatalkan atau diubah status bayarnya.
+8. Isi transaksi hanya bisa diubah jika `Transaction::isEditable()` bernilai `true`: berstatus `draft`, atau berstatus `confirmed` dengan status bayar `unpaid`. Transaksi yang sudah `partial`, `paid`, atau `cancelled` tidak bisa diubah isinya. (Sebelum tugas 15: transaksi `confirmed` sama sekali tidak bisa diubah isinya.)
 9. Laporan hanya menghitung transaksi berstatus `confirmed`.
 10. Barang yang sudah dipakai di transaksi tidak bisa dihapus dan satuannya tidak bisa diubah.
 11. Nomor HP pelanggan unik. Pencocokan pelanggan memakai nomor HP yang sudah dinormalkan.
+12. Jumlah barang boleh desimal (paling banyak 3 angka di belakang koma) hanya untuk satuan di `config('shop.decimal_units')`. Satuan lain wajib bilangan bulat (sejak tugas 12).
+13. Hanya draf yang boleh dihapus. Draf tidak masuk laporan (sejak tugas 15).
 
 ## 9. Daftar rute
 
@@ -181,6 +188,8 @@ Semua rute selain login wajib memakai middleware `auth`.
 | GET | `/transactions` | `transactions.index` | 08 |
 | GET | `/transactions/create` | `transactions.create` | 07 |
 | GET | `/transactions/{transaction}` | `transactions.show` | 08 |
+| GET | `/transactions/{transaction}/edit` | `transactions.edit` | 15 |
+| DELETE | `/transactions/{transaction}` | `transactions.destroy` | 15 |
 | POST | `/transactions/{transaction}/cancel` | `transactions.cancel` | 08 |
 | POST | `/transactions/{transaction}/payment-status` | `transactions.payment-status` | 08 |
 | GET | `/reports/daily` | `reports.daily` | 09 |
@@ -196,11 +205,12 @@ app/
   Livewire/         TransactionForm
   Models/           Product, ProductPrice, Customer, Transaction, TransactionItem, User
   Services/         ProductService, CustomerService, TransactionService
-  Support/          Format, Phone
-config/shop.php     daftar satuan dan data akun pemilik
+  Support/          Format, Parse, Phone
+config/shop.php     daftar satuan, satuan desimal, dan data akun pemilik
 resources/views/
   layouts/app.blade.php
   auth/ products/ customers/ transactions/ reports/ livewire/
+resources/js/       app.js dan rupiah.js (format titik ribuan, sejak tugas 13)
 tests/Feature/      satu file tes per bagian
 tests/Unit/         tes untuk Format dan Phone
 tests/e2e/          tes Playwright

@@ -149,4 +149,84 @@ class ProductTest extends TestCase
         $this->get('/products/create')->assertOk()->assertSee('Simpan dan tambah lagi');
         $this->get("/products/{$product->id}/edit")->assertOk()->assertDontSee('Simpan dan tambah lagi');
     }
+
+    public function test_store_accepts_thousand_separators(): void
+    {
+        $this->post('/products', ['name' => 'Minyak', 'unit' => 'liter', 'sell_price' => '15.000', 'cost_price' => '12.500'])
+            ->assertSessionDoesntHaveErrors();
+
+        $price = Product::firstOrFail()->prices()->first();
+        $this->assertSame(15000, $price->sell_price);
+        $this->assertSame(12500, $price->cost_price);
+    }
+
+    public function test_store_rejects_decimal_comma_in_price(): void
+    {
+        $this->post('/products', ['name' => 'Minyak', 'unit' => 'liter', 'sell_price' => '15.000,50'])
+            ->assertSessionHasErrors('sell_price');
+
+        $this->assertSame(0, Product::count());
+    }
+
+    public function test_adding_price_accepts_thousand_separators(): void
+    {
+        $product = app(ProductService::class)->create('Gula', 'kg', 10000);
+        ProductPrice::query()->update(['effective_from' => now()->subDay()]);
+
+        $this->post("/products/{$product->id}/prices", ['sell_price' => '17.500'])->assertSessionDoesntHaveErrors();
+
+        $this->assertSame(17500, $product->fresh()->currentPrice->sell_price);
+    }
+
+    public function test_show_page_formats_cost_price_for_input(): void
+    {
+        $product = app(ProductService::class)->create('Gula', 'kg', 15000, 12000);
+
+        $this->get("/products/{$product->id}")
+            ->assertOk()
+            ->assertSee('value="12.000"', false)
+            ->assertSee('data-rupiah', false);
+    }
+
+    public function test_store_saves_name_uppercase_and_trimmed(): void
+    {
+        $this->post('/products', ['name' => '  gula pasir ', 'unit' => 'kg', 'sell_price' => 15000])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertSame('GULA PASIR', Product::firstOrFail()->name);
+    }
+
+    public function test_update_saves_name_uppercase(): void
+    {
+        $product = Product::factory()->create(['name' => 'TEH', 'unit' => 'pak']);
+
+        $this->put("/products/{$product->id}", ['name' => 'Gula Merah', 'unit' => 'pak'])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertSame('GULA MERAH', $product->fresh()->name);
+    }
+
+    public function test_duplicate_is_still_detected_case_insensitively_after_uppercase(): void
+    {
+        $this->post('/products', ['name' => 'Gula', 'unit' => 'kg', 'sell_price' => 1000]);
+        $this->post('/products', ['name' => 'gula', 'unit' => 'kg', 'sell_price' => 1000])
+            ->assertSessionHasErrors('name');
+
+        $this->assertSame(1, Product::count());
+    }
+
+    public function test_create_form_has_uppercase_class(): void
+    {
+        $this->get('/products/create')->assertOk()->assertSee('text-uppercase', false);
+    }
+
+    public function test_migration_uppercases_existing_names(): void
+    {
+        $product = Product::factory()->create(['name' => 'kopi bubuk']);
+
+        $migration = require database_path('migrations/2026_11_18_000001_uppercase_product_names.php');
+        $migration->up();
+
+        $this->assertSame('KOPI BUBUK', $product->fresh()->name);
+    }
 }

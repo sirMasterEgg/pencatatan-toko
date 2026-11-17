@@ -20,12 +20,17 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 | `09-laporan-harian.md` | Beranda dan laporan harian | Model AI |
 | `10-pemeriksaan-akhir.md` | Pemeriksaan menyeluruh | Model AI |
 | `11-alur-tambah-barang-dan-pelanggan.md` | Tombol "Simpan" dan "Simpan dan tambah lagi" di form tambah barang dan pelanggan | Model AI |
+| `12-jumlah-desimal.md` | Jumlah desimal untuk satuan timbang/ukur, koma diterima | Model AI |
+| `13-titik-ribuan-harga.md` | Titik ribuan otomatis di semua kolom uang | Model AI |
+| `14-nama-barang-huruf-besar.md` | Nama barang selalu huruf besar, termasuk data lama | Model AI |
+| `15-draf-dan-ubah-transaksi.md` | Draf dan ubah transaksi: aturan, layanan, rute, halaman | Model AI |
+| `16-form-draf-dan-ubah.md` | Draf dan ubah transaksi: form Livewire | Model AI |
 
 ## Cara pakai
 
 1. Salin folder ini ke dalam proyek, misalnya ke `docs/instruksi/`.
 2. Pindahkan `CLAUDE.md` ke akar proyek jika Anda memakai Claude Code. File itu ringkasan `00-aturan-umum.md` dan mengandaikan file tugas berada di `docs/instruksi/`. Untuk alat lain yang membaca file aturan otomatis, salin isinya ke file yang sesuai, misalnya `AGENTS.md`.
-3. Kerjakan tugas berurutan dari 01 sampai 11. Satu tugas satu sesi percakapan baru. Tugas 01 sampai 10 membangun tahap 1. Tugas 11 dan seterusnya adalah perbaikan setelah tahap 1 selesai.
+3. Kerjakan tugas berurutan dari 01 sampai 16. Satu tugas satu sesi percakapan baru. Tugas 01 sampai 10 membangun tahap 1. Tugas 11 dan seterusnya adalah perbaikan setelah tahap 1 selesai.
 4. Di awal setiap sesi, berikan perintah seperti ini:
 
    ```
@@ -44,6 +49,8 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 - Jika tes gagal dua kali berturut-turut pada hal yang sama, tempelkan pesan galat lengkapnya dan minta model memperbaiki hanya itu.
 - Jika model mengusulkan paket tambahan atau mengubah skema, tolak. Semua yang dibutuhkan sudah tertulis.
 - Tugas 06 dan 07 paling sulit. Pertimbangkan memakai model yang lebih kuat khusus untuk dua tugas ini.
+- Dari tugas 12 sampai 16, yang paling berisiko adalah 15 dan 16, karena mengubah aturan bisnis inti. Kode dan tesnya sudah ditulis lengkap di file tugas, tetapi tetap periksa laporannya dengan teliti.
+- Tugas 15 dan 16 saling bergantung. Setelah tugas 15 dan sebelum tugas 16 selesai, halaman "Ubah transaksi" masih menampilkan form kosong. Jangan dipakai untuk data sungguhan di antara keduanya.
 
 ## Keputusan yang sudah diambil
 
@@ -59,6 +66,11 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 | Pengguna | Satu akun pemilik, tanpa pendaftaran |
 | Tes | PHPUnit bawaan Laravel. Tes e2e Playwright di `tests/e2e/` ditambahkan di luar file tugas dan mulai dirawat lewat file tugas sejak tugas 11 |
 | Setelah tambah barang atau pelanggan | "Simpan" kembali ke daftar, "Simpan dan tambah lagi" membuka form kosong lagi (tugas 11, menggantikan redirect ke halaman detail di tugas 04 dan 05) |
+| Jumlah desimal | Hanya `kg`, `gram`, `liter`, `meter` (daftar di `config/shop.php`), maksimal 3 angka di belakang koma. Koma dan titik sama-sama tanda desimal (tugas 12) |
+| Kolom uang | Titik ribuan otomatis saat diketik, di halaman barang dan form transaksi, termasuk diskon (tugas 13) |
+| Nama barang | Disimpan huruf besar. Data lama diubah sekali lewat migrasi (tugas 14) |
+| Draf | Bisa diubah kapan saja, tidak masuk laporan, bisa dihapus permanen. Barang baru dari draf yang dihapus tetap ada (tugas 15) |
+| Ubah transaksi | Boleh selama status bayar "Belum bayar". "Sebagian" dan "Lunas" mengunci. Mengembalikan status ke "Belum bayar" membuka kunci lagi (tugas 15) |
 
 ## Yang sengaja belum dibuat
 
@@ -68,4 +80,5 @@ Input dari foto nota dan chat WhatsApp, antrean review, gabung barang, analisis 
 
 - Nama tabel dan kolom memakai bahasa Inggris. Padanannya ada di kamus istilah dalam `00-aturan-umum.md`.
 - Tabel lampiran belum dibuat karena baru dipakai di tahap 2.
-- Ada satu tambahan: status bayar transaksi bisa diubah setelah transaksi dikonfirmasi, agar piutang bisa ditandai lunas. Isi transaksi lainnya tetap tidak bisa diubah.
+- Ada satu tambahan: status bayar transaksi bisa diubah setelah transaksi dikonfirmasi, agar piutang bisa ditandai lunas.
+- Sejak tugas 15, isi transaksi juga bisa diubah selama belum dibayar, dan transaksi bisa disimpan sebagai draf.

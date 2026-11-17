@@ -70,7 +70,7 @@ class TransactionServiceTest extends TestCase
         $this->assertSame(248000, $trx->total);
         $this->assertNotNull(Customer::where('phone', '6281200001234')->first());
 
-        $gula = Product::where('name', 'Gula')->firstOrFail();
+        $gula = Product::where('name', 'GULA')->firstOrFail();
         $this->assertSame(ProductStatus::NeedsReview, $gula->status);
         $this->assertSame($trx->id, $gula->created_from_transaction_id);
         $this->assertSame(1, $gula->prices()->count());
@@ -291,5 +291,92 @@ class TransactionServiceTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->put("/products/{$product->id}", ['name' => 'Gula', 'unit' => 'karton'])
             ->assertSessionHasErrors('unit');
+    }
+
+    public function test_comma_quantity_for_kg_is_stored_as_decimal(): void
+    {
+        $p = $this->productWithPrice('Gula', 'kg', 18000);
+
+        $trx = $this->service->create($this->base([$this->existingItem($p, ['quantity' => '0,5', 'unit_price' => 18000])]));
+
+        $this->assertSame(9000, $trx->total);
+        $this->assertSame('0.500', $trx->items->first()->quantity);
+    }
+
+    public function test_every_decimal_unit_accepts_fractions(): void
+    {
+        $units = config('shop.decimal_units');
+        $items = [];
+        foreach ($units as $unit) {
+            $p = $this->productWithPrice('Barang '.$unit, $unit, 1000);
+            $items[] = $this->existingItem($p, ['quantity' => '1,5', 'unit_price' => 1000]);
+        }
+
+        $trx = $this->service->create($this->base($items));
+
+        $this->assertCount(count($units), $trx->items);
+    }
+
+    public function test_fraction_is_rejected_for_pcs_with_clear_message(): void
+    {
+        $product = $this->productWithPrice('Sabun', 'pcs', 3000);
+
+        try {
+            $this->service->create($this->base([$this->existingItem($product, ['quantity' => '1,5'])]));
+            $this->fail('Seharusnya ditolak.');
+        } catch (ValidationException $e) {
+            $this->assertSame('Jumlah untuk satuan pcs harus bilangan bulat.', $e->errors()['items.0.quantity'][0]);
+        }
+
+        $this->assertSame(0, Transaction::count());
+    }
+
+    public function test_fraction_is_rejected_for_new_pcs_product(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        $this->service->create($this->base([$this->newItem('Sabun', 'pcs', ['quantity' => '0,5'])]));
+    }
+
+    public function test_whole_number_written_with_decimals_is_accepted_for_pcs(): void
+    {
+        $product = $this->productWithPrice('Sabun', 'pcs', 3000);
+
+        $trx = $this->service->create($this->base([$this->existingItem($product, ['quantity' => '2,0', 'unit_price' => 3000])]));
+
+        $this->assertSame(6000, $trx->total);
+    }
+
+    public function test_more_than_three_decimals_is_rejected(): void
+    {
+        $product = $this->productWithPrice('Gula', 'kg', 18000);
+
+        $this->expectException(ValidationException::class);
+        $this->service->create($this->base([$this->existingItem($product, ['quantity' => '0,1234'])]));
+    }
+
+    public function test_malformed_quantity_is_rejected(): void
+    {
+        $product = $this->productWithPrice('Gula', 'kg', 18000);
+
+        $this->expectException(ValidationException::class);
+        $this->service->create($this->base([$this->existingItem($product, ['quantity' => '1,2,3'])]));
+    }
+
+    public function test_new_product_name_is_saved_uppercase(): void
+    {
+        $this->service->create($this->base([$this->newItem('teh celup', 'pak')]));
+
+        $this->assertSame('TEH CELUP', Product::firstOrFail()->name);
+    }
+
+    public function test_new_item_matching_existing_uppercase_product_does_not_duplicate(): void
+    {
+        $existing = $this->productWithPrice('TEH CELUP', 'pak', 8000);
+
+        $trx = $this->service->create($this->base([$this->newItem('Teh Celup', 'pak', ['unit_price' => 8000])]));
+
+        $this->assertSame(1, Product::count());
+        $this->assertSame($existing->id, $trx->items->first()->product_id);
     }
 }
