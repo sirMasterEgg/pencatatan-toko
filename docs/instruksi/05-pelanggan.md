@@ -65,6 +65,7 @@ Dengan begitu aturan unik memeriksa nomor yang sudah dinormalkan. Pesan galat un
 
 - Buat pelanggan langsung dengan `Customer::create`. Jangan memakai `findOrCreate` di sini, karena halaman ini harus menolak nomor ganda.
 - Redirect ke `customers.show` dengan pesan `Pelanggan berhasil ditambahkan.`
+- Catatan: tujuan redirect ini diganti oleh tugas 11 (`11-alur-tambah-barang-dan-pelanggan.md`). Teks pesannya tetap.
 
 `show`
 

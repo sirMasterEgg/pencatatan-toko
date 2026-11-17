@@ -4,7 +4,7 @@ Aplikasi pencatatan penjualan untuk satu toko kecil, dipakai pemilik lewat HP. P
 
 ## Cara kerja di proyek ini
 
-- Pekerjaan dibagi menjadi file tugas di `docs/instruksi/`, bernomor `01` sampai `10`. Kerjakan satu file tugas dalam satu waktu, sesuai urutan.
+- Pekerjaan dibagi menjadi file tugas di `docs/instruksi/`, bernomor `01` sampai `11`. Kerjakan satu file tugas dalam satu waktu, sesuai urutan.
 - Sebelum mengerjakan tugas, baca `docs/instruksi/00-aturan-umum.md`. File itu memuat kamus istilah lengkap dan daftar semua rute.
 - Kerjakan persis yang tertulis di file tugas. Jangan menambah fitur, paket, tabel, atau kolom.
 - Jika instruksi tidak bisa dijalankan atau saling bertentangan, berhenti dan laporkan. Jangan mengarang jalan keluar.
@@ -16,7 +16,8 @@ Aplikasi pencatatan penjualan untuk satu toko kecil, dipakai pemilik lewat HP. P
 ```bash
 php artisan test                      # jalankan semua tes
 php artisan test --filter=NamaTes     # jalankan satu tes
-npm run build                         # bangun aset
+npm run build                         # bangun aset (wajib sebelum php artisan test)
+npm run test:e2e                      # tes e2e Playwright, perlu npm run build lebih dulu
 npm run dev                           # mode pengembangan aset
 php artisan serve                     # jalankan aplikasi
 php artisan migrate:fresh --seed      # ulang database (OWNER_PASSWORD di .env harus terisi)
@@ -30,7 +31,7 @@ php artisan make:livewire Nama --class  # SELALU pakai --class
 - Blade dan Bootstrap 5.3 lewat npm dan Vite. Tanpa Sass, tanpa CDN.
 - Livewire 4 gaya class-based, hanya untuk form transaksi.
 - SQLite. Kode harus tetap jalan di MySQL.
-- PHPUnit.
+- PHPUnit. Tes e2e memakai Playwright (`@playwright/test`, sudah terpasang).
 - Paket yang boleh dipasang hanya `livewire/livewire`, `bootstrap`, `@popperjs/core`.
 
 ## Jebakan versi
@@ -99,6 +100,7 @@ app/Support/          Format, Phone
 config/shop.php       daftar satuan dan data akun pemilik
 resources/views/      layouts, auth, products, customers, transactions, reports, livewire
 tests/Feature/        satu file tes per bagian
+tests/e2e/            tes Playwright
 docs/instruksi/       file tugas
 ```
 
