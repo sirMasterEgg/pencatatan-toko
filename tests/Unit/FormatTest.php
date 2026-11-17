@@ -21,4 +21,14 @@ class FormatTest extends TestCase
         $this->assertSame('1,25', Format::quantity(1.25));
         $this->assertSame('1.000', Format::quantity(1000));
     }
+
+    public function test_thousands(): void
+    {
+        $this->assertSame('15.000', Format::thousands(15000));
+        $this->assertSame('1.500.000', Format::thousands('1500000'));
+        $this->assertSame('0', Format::thousands(0));
+        $this->assertSame('', Format::thousands(null));
+        $this->assertSame('', Format::thousands(''));
+        $this->assertSame('abc', Format::thousands('abc'));
+    }
 }

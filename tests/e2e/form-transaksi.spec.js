@@ -60,7 +60,8 @@ test('form transaksi: jumlah desimal dengan koma untuk satuan kg', async ({ page
     await page.getByPlaceholder('Ketik nama barang').fill(name);
     await page.getByRole('button', { name: `+ Tambah "${name}" sebagai barang baru` }).click();
     await page.getByLabel('Satuan').selectOption('kg');
-    await page.getByLabel('Harga jual').fill('12000');
+    await page.getByLabel('Harga jual').pressSequentially('12000');
+    await expect(page.getByLabel('Harga jual')).toHaveValue('12.000');
     await page.getByLabel('Jumlah').fill('1,5');
     await page.getByLabel('Diskon').click();
     await expect(page.getByText('Rp18.000').first()).toBeVisible();
@@ -68,4 +69,34 @@ test('form transaksi: jumlah desimal dengan koma untuk satuan kg', async ({ page
     await page.getByRole('button', { name: 'Simpan transaksi' }).click();
     await page.waitForURL(/\/transactions\/\d+$/);
     await expect(page.getByText('1,5 kg')).toBeVisible();
+});
+
+test('form transaksi: harga barang lama bertitik ribuan dan bisa diubah', async ({ page }) => {
+    const name = `Kopi ${Date.now()}`;
+
+    await page.goto('/products/create');
+    await page.getByLabel('Nama').fill(name);
+    await page.getByLabel('Satuan').selectOption('pcs');
+    await page.getByLabel('Harga jual').fill('118000');
+    await page.getByRole('button', { name: 'Simpan', exact: true }).click();
+    await page.waitForURL(/\/products$/);
+
+    await page.goto('/transactions/create');
+    await page.getByPlaceholder('Ketik nama barang').fill(name);
+    await page.getByRole('button', { name: new RegExp(name, 'i') }).first().click();
+    await expect(page.getByLabel('Harga satuan')).toHaveValue('118.000');
+
+    await page.getByLabel('Harga satuan').fill('');
+    await page.getByLabel('Harga satuan').pressSequentially('115000');
+    await expect(page.getByLabel('Harga satuan')).toHaveValue('115.000');
+    await page.getByLabel('Jumlah').fill('2');
+    await page.getByLabel('Diskon').click();
+    await expect(page.getByText('Rp230.000').first()).toBeVisible();
+    await expect(page.getByLabel('Jadikan harga baru')).toBeVisible();
+    await expect(page.getByLabel('Harga satuan')).toHaveValue('115.000');
+
+    await page.getByRole('button', { name: 'Simpan transaksi' }).click();
+    await page.waitForURL(/\/transactions\/\d+$/);
+    await expect(page.getByText('Rp230.000').first()).toBeVisible();
+    await expect(page.getByText('Harga daftar: Rp118.000')).toBeVisible();
 });

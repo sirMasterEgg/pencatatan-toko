@@ -117,7 +117,7 @@
                                 </div>
                                 <div class="col-6">
                                     <label class="form-label" for="cost-{{ $i }}">Harga modal</label>
-                                    <input type="number" id="cost-{{ $i }}" class="form-control @error("items.$i.new_product.cost_price") is-invalid @enderror" wire:model="items.{{ $i }}.cost_price" min="0" step="1" inputmode="numeric">
+                                    <input type="text" id="cost-{{ $i }}" class="form-control @error("items.$i.new_product.cost_price") is-invalid @enderror" wire:model="items.{{ $i }}.cost_price" inputmode="numeric" autocomplete="off" data-rupiah>
                                     @error("items.$i.new_product.cost_price") <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
@@ -145,19 +145,19 @@
                             </div>
                             <div class="col-4">
                                 <label class="form-label" for="price-{{ $i }}">{{ $row['mode'] === 'new' ? 'Harga jual' : 'Harga satuan' }}</label>
-                                <input type="number" id="price-{{ $i }}" class="form-control @error("items.$i.unit_price") is-invalid @enderror"
-                                       wire:model.live.blur="items.{{ $i }}.unit_price" min="0" step="1" inputmode="numeric">
+                                <input type="text" id="price-{{ $i }}" class="form-control @error("items.$i.unit_price") is-invalid @enderror"
+                                       wire:model.live.blur="items.{{ $i }}.unit_price" inputmode="numeric" autocomplete="off" data-rupiah>
                                 @error("items.$i.unit_price") <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-4">
                                 <label class="form-label" for="disc-{{ $i }}">Diskon</label>
-                                <input type="number" id="disc-{{ $i }}" class="form-control @error("items.$i.discount") is-invalid @enderror"
-                                       wire:model.live.blur="items.{{ $i }}.discount" min="0" step="1" inputmode="numeric">
+                                <input type="text" id="disc-{{ $i }}" class="form-control @error("items.$i.discount") is-invalid @enderror"
+                                       wire:model.live.blur="items.{{ $i }}.discount" inputmode="numeric" autocomplete="off" data-rupiah>
                                 @error("items.$i.discount") <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
 
-                        @if ($row['mode'] === 'existing' && $row['list_price'] !== null && is_numeric($row['unit_price']) && (int) $row['unit_price'] !== (int) $row['list_price'])
+                        @if ($row['mode'] === 'existing' && $row['list_price'] !== null && is_int(\App\Support\Parse::rupiah($row['unit_price'])) && \App\Support\Parse::rupiah($row['unit_price']) !== (int) $row['list_price'])
                             <div class="mb-2">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" id="pm-this-{{ $i }}" value="this_only" wire:model="items.{{ $i }}.price_mode">

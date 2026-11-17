@@ -64,7 +64,7 @@ class TransactionFormTest extends TestCase
         Livewire::test(TransactionForm::class)
             ->call('selectProduct', 0, $p->id)
             ->assertSet('items.0.mode', 'existing')
-            ->assertSet('items.0.unit_price', 118000);
+            ->assertSet('items.0.unit_price', '118.000');
     }
 
     public function test_start_new_product_uses_search_text(): void
@@ -177,5 +177,30 @@ class TransactionFormTest extends TestCase
         $instance = Livewire::test(TransactionForm::class)->instance();
 
         $this->assertSame(9000, $instance->rowSubtotal(['quantity' => '0,5', 'unit_price' => 18000, 'discount' => 0]));
+    }
+
+    public function test_row_subtotal_understands_thousand_separators(): void
+    {
+        $instance = Livewire::test(TransactionForm::class)->instance();
+
+        $this->assertSame(35000, $instance->rowSubtotal(['quantity' => '2', 'unit_price' => '18.000', 'discount' => '1.000']));
+    }
+
+    public function test_save_with_dotted_prices_stores_integers(): void
+    {
+        $mi = $this->miInstan();
+
+        Livewire::test(TransactionForm::class)
+            ->call('selectProduct', 0, $mi->id)
+            ->set('items.0.quantity', '2')
+            ->set('items.0.unit_price', '115.000')
+            ->set('items.0.discount', '1.000')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $item = Transaction::firstOrFail()->items->first();
+        $this->assertSame(115000, $item->unit_price);
+        $this->assertSame(1000, $item->discount);
+        $this->assertSame(229000, $item->subtotal);
     }
 }

@@ -149,4 +149,42 @@ class ProductTest extends TestCase
         $this->get('/products/create')->assertOk()->assertSee('Simpan dan tambah lagi');
         $this->get("/products/{$product->id}/edit")->assertOk()->assertDontSee('Simpan dan tambah lagi');
     }
+
+    public function test_store_accepts_thousand_separators(): void
+    {
+        $this->post('/products', ['name' => 'Minyak', 'unit' => 'liter', 'sell_price' => '15.000', 'cost_price' => '12.500'])
+            ->assertSessionDoesntHaveErrors();
+
+        $price = Product::firstOrFail()->prices()->first();
+        $this->assertSame(15000, $price->sell_price);
+        $this->assertSame(12500, $price->cost_price);
+    }
+
+    public function test_store_rejects_decimal_comma_in_price(): void
+    {
+        $this->post('/products', ['name' => 'Minyak', 'unit' => 'liter', 'sell_price' => '15.000,50'])
+            ->assertSessionHasErrors('sell_price');
+
+        $this->assertSame(0, Product::count());
+    }
+
+    public function test_adding_price_accepts_thousand_separators(): void
+    {
+        $product = app(ProductService::class)->create('Gula', 'kg', 10000);
+        ProductPrice::query()->update(['effective_from' => now()->subDay()]);
+
+        $this->post("/products/{$product->id}/prices", ['sell_price' => '17.500'])->assertSessionDoesntHaveErrors();
+
+        $this->assertSame(17500, $product->fresh()->currentPrice->sell_price);
+    }
+
+    public function test_show_page_formats_cost_price_for_input(): void
+    {
+        $product = app(ProductService::class)->create('Gula', 'kg', 15000, 12000);
+
+        $this->get("/products/{$product->id}")
+            ->assertOk()
+            ->assertSee('value="12.000"', false)
+            ->assertSee('data-rupiah', false);
+    }
 }

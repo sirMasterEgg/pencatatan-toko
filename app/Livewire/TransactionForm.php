@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Services\TransactionService;
+use App\Support\Format;
 use App\Support\Parse;
 use App\Support\Phone;
 use Illuminate\Support\Str;
@@ -146,7 +147,7 @@ class TransactionForm extends Component
             'name' => $product->name,
             'unit' => $product->unit,
             'list_price' => $price,
-            'unit_price' => $price,
+            'unit_price' => Format::thousands($price),
             'price_mode' => 'this_only',
             'search' => '',
             'results' => [],
@@ -220,13 +221,14 @@ class TransactionForm extends Component
     public function rowSubtotal(array $row): int
     {
         $quantity = Parse::quantity($row['quantity'] ?? null);
-        $unitPrice = $row['unit_price'] ?? null;
+        $unitPrice = Parse::rupiah($row['unit_price'] ?? null);
 
-        if (! is_numeric($quantity) || ! is_numeric($unitPrice)) {
+        if (! is_numeric($quantity) || ! is_int($unitPrice)) {
             return 0;
         }
 
-        $discount = is_numeric($row['discount'] ?? null) ? (int) $row['discount'] : 0;
+        $discount = Parse::rupiah($row['discount'] ?? null);
+        $discount = is_int($discount) ? $discount : 0;
 
         return TransactionService::calculateSubtotal($quantity, (int) $unitPrice, $discount);
     }
@@ -263,7 +265,7 @@ class TransactionForm extends Component
             return;
         }
 
-        $toInt = fn ($v) => is_numeric($v) ? (int) $v : ($v === '' ? null : $v);
+        $toInt = fn ($v) => Parse::rupiah($v);
 
         $items = [];
         foreach ($this->items as $row) {
