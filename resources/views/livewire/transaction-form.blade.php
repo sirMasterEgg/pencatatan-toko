@@ -108,7 +108,7 @@
                             <div class="row g-2 mb-2">
                                 <div class="col-6">
                                     <label class="form-label" for="unit-{{ $i }}">Satuan</label>
-                                    <select id="unit-{{ $i }}" class="form-select @error("items.$i.new_product.unit") is-invalid @enderror" wire:model="items.{{ $i }}.unit">
+                                    <select id="unit-{{ $i }}" class="form-select @error("items.$i.new_product.unit") is-invalid @enderror" wire:model.live="items.{{ $i }}.unit">
                                         @foreach ($units as $unit)
                                             <option value="{{ $unit }}">{{ $unit }}</option>
                                         @endforeach
@@ -138,9 +138,10 @@
                         <div class="row g-2 mb-2">
                             <div class="col-4">
                                 <label class="form-label" for="qty-{{ $i }}">Jumlah</label>
-                                <input type="number" id="qty-{{ $i }}" class="form-control @error("items.$i.quantity") is-invalid @enderror"
-                                       wire:model.live.blur="items.{{ $i }}.quantity" min="0" step="0.001" inputmode="decimal">
+                                <input type="text" id="qty-{{ $i }}" class="form-control @error("items.$i.quantity") is-invalid @enderror"
+                                       wire:model.live.blur="items.{{ $i }}.quantity" inputmode="{{ in_array($row['unit'], $decimalUnits, true) ? 'decimal' : 'numeric' }}" autocomplete="off">
                                 @error("items.$i.quantity") <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <div class="form-text">{{ $row['unit'] }}</div>
                             </div>
                             <div class="col-4">
                                 <label class="form-label" for="price-{{ $i }}">{{ $row['mode'] === 'new' ? 'Harga jual' : 'Harga satuan' }}</label>

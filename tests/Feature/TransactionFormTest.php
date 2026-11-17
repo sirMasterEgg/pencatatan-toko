@@ -171,4 +171,11 @@ class TransactionFormTest extends TestCase
 
         $this->assertSame(248000, $instance->total());
     }
+
+    public function test_row_subtotal_understands_comma_quantity(): void
+    {
+        $instance = Livewire::test(TransactionForm::class)->instance();
+
+        $this->assertSame(9000, $instance->rowSubtotal(['quantity' => '0,5', 'unit_price' => 18000, 'discount' => 0]));
+    }
 }

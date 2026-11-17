@@ -8,6 +8,7 @@ use App\Enums\ProductStatus;
 use App\Enums\TransactionStatus;
 use App\Models\Product;
 use App\Models\Transaction;
+use App\Support\Parse;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -28,6 +29,7 @@ class TransactionService
 
     public function create(array $data): Transaction
     {
+        $data = $this->normalize($data);
         $this->validate($data);
 
         return DB::transaction(function () use ($data) {
@@ -181,6 +183,17 @@ class TransactionService
         return $prefix.str_pad((string) $sequence, 3, '0', STR_PAD_LEFT);
     }
 
+    private function normalize(array $data): array
+    {
+        foreach ($data['items'] ?? [] as $index => $item) {
+            if (is_array($item) && array_key_exists('quantity', $item)) {
+                $data['items'][$index]['quantity'] = Parse::quantity($item['quantity']);
+            }
+        }
+
+        return $data;
+    }
+
     private function validate(array $data): void
     {
         $rules = [
@@ -202,7 +215,7 @@ class TransactionService
             'items.*.new_product.name' => ['required_without:items.*.product_id', 'nullable', 'string', 'max:255'],
             'items.*.new_product.unit' => ['required_without:items.*.product_id', 'nullable', Rule::in(config('shop.units'))],
             'items.*.new_product.cost_price' => ['nullable', 'integer', 'min:0'],
-            'items.*.quantity' => ['required', 'numeric', 'gt:0'],
+            'items.*.quantity' => ['required', 'numeric', 'gt:0', 'decimal:0,3'],
             'items.*.unit_price' => ['required', 'integer', 'min:0'],
             'items.*.discount' => ['nullable', 'integer', 'min:0'],
             'items.*.price_mode' => ['nullable', Rule::in(['this_only', 'new_price'])],
@@ -212,6 +225,7 @@ class TransactionService
             'items.required' => 'Transaksi harus punya minimal satu barang.',
             'items.min' => 'Transaksi harus punya minimal satu barang.',
             'transacted_at.before_or_equal' => 'Tanggal transaksi tidak boleh di masa depan.',
+            'items.*.quantity.decimal' => 'Jumlah paling banyak 3 angka di belakang koma.',
         ];
 
         $attributes = [
@@ -228,11 +242,19 @@ class TransactionService
         $errors = [];
 
         foreach ($data['items'] as $index => $item) {
+            $unit = $item['new_product']['unit'] ?? null;
+
             if (! empty($item['product_id'])) {
                 $product = Product::find($item['product_id']);
+                $unit = $product?->unit;
                 if ($product && ! in_array($product->status, [ProductStatus::Active, ProductStatus::NeedsReview], true)) {
                     $errors["items.{$index}.product_id"] = 'Barang ini sudah tidak aktif.';
                 }
+            }
+
+            $quantity = (float) $item['quantity'];
+            if ($unit !== null && ! in_array($unit, config('shop.decimal_units'), true) && floor($quantity) !== $quantity) {
+                $errors["items.{$index}.quantity"] = "Jumlah untuk satuan {$unit} harus bilangan bulat.";
             }
 
             $subtotal = self::calculateSubtotal($item['quantity'], (int) $item['unit_price'], (int) ($item['discount'] ?? 0));

@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Services\TransactionService;
+use App\Support\Parse;
 use App\Support\Phone;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -218,7 +219,7 @@ class TransactionForm extends Component
 
     public function rowSubtotal(array $row): int
     {
-        $quantity = $row['quantity'] ?? null;
+        $quantity = Parse::quantity($row['quantity'] ?? null);
         $unitPrice = $row['unit_price'] ?? null;
 
         if (! is_numeric($quantity) || ! is_numeric($unitPrice)) {
@@ -310,6 +311,7 @@ class TransactionForm extends Component
     {
         return view('livewire.transaction-form', [
             'units' => config('shop.units'),
+            'decimalUnits' => config('shop.decimal_units'),
             'channels' => Channel::cases(),
             'paymentStatuses' => PaymentStatus::cases(),
         ]);

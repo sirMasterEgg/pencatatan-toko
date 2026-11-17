@@ -52,3 +52,20 @@ test('form transaksi: barang baru, pelanggan baru, total, simpan', async ({ page
     await expect(page.getByText('Transaksi dibatalkan.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Batalkan transaksi' })).toHaveCount(0);
 });
+
+test('form transaksi: jumlah desimal dengan koma untuk satuan kg', async ({ page }) => {
+    const name = `Beras ${Date.now()}`;
+
+    await page.goto('/transactions/create');
+    await page.getByPlaceholder('Ketik nama barang').fill(name);
+    await page.getByRole('button', { name: `+ Tambah "${name}" sebagai barang baru` }).click();
+    await page.getByLabel('Satuan').selectOption('kg');
+    await page.getByLabel('Harga jual').fill('12000');
+    await page.getByLabel('Jumlah').fill('1,5');
+    await page.getByLabel('Diskon').click();
+    await expect(page.getByText('Rp18.000').first()).toBeVisible();
+
+    await page.getByRole('button', { name: 'Simpan transaksi' }).click();
+    await page.waitForURL(/\/transactions\/\d+$/);
+    await expect(page.getByText('1,5 kg')).toBeVisible();
+});
