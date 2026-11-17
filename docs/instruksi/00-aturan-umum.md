@@ -48,6 +48,8 @@ Yang TIDAK dibuat. Jangan membuatnya walaupun terlihat berguna:
 
 Paket yang boleh dipasang hanya: `livewire/livewire`, `bootstrap`, `@popperjs/core`. Jangan memasang paket lain.
 
+Proyek juga punya tes e2e Playwright di `tests/e2e/`, dijalankan dengan `npm run test:e2e`. Paket `@playwright/test` sudah terpasang, jangan menghapus atau memperbaruinya. Tes e2e hanya diubah jika file tugas memintanya (pertama kali di tugas 11).
+
 ## 5. Hal yang berbeda dari versi lama
 
 Pengetahuan Anda mungkin berasal dari Laravel dan Livewire versi lama. Ikuti aturan berikut.
@@ -201,6 +203,7 @@ resources/views/
   auth/ products/ customers/ transactions/ reports/ livewire/
 tests/Feature/      satu file tes per bagian
 tests/Unit/         tes untuk Format dan Phone
+tests/e2e/          tes Playwright
 ```
 
 ## 11. Cara mengerjakan satu tugas

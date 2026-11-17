@@ -111,4 +111,42 @@ class CustomerTest extends TestCase
 
         $this->assertSame(2, Customer::count());
     }
+
+    public function test_store_without_after_save_redirects_to_index(): void
+    {
+        $this->post('/customers', ['name' => 'Bu Sari'])
+            ->assertRedirect('/customers')
+            ->assertSessionHas('success', 'Pelanggan berhasil ditambahkan.');
+    }
+
+    public function test_store_with_add_another_redirects_to_create_form(): void
+    {
+        $this->post('/customers', ['name' => 'Bu Sari', 'after_save' => 'add_another'])
+            ->assertRedirect('/customers/create')
+            ->assertSessionHas('success', 'Pelanggan berhasil ditambahkan.');
+
+        $this->assertSame(1, Customer::count());
+    }
+
+    public function test_store_with_other_after_save_value_redirects_to_index(): void
+    {
+        $this->post('/customers', ['name' => 'Bu Sari', 'after_save' => 'lainnya'])
+            ->assertRedirect('/customers');
+    }
+
+    public function test_store_with_add_another_and_invalid_data_returns_errors(): void
+    {
+        $this->post('/customers', ['name' => '', 'after_save' => 'add_another'])
+            ->assertSessionHasErrors('name');
+
+        $this->assertSame(0, Customer::count());
+    }
+
+    public function test_add_another_button_only_on_create_form(): void
+    {
+        $customer = Customer::factory()->create();
+
+        $this->get('/customers/create')->assertOk()->assertSee('Simpan dan tambah lagi');
+        $this->get("/customers/{$customer->id}/edit")->assertOk()->assertDontSee('Simpan dan tambah lagi');
+    }
 }

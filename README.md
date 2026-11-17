@@ -2,7 +2,7 @@
 
 Aplikasi pencatatan penjualan untuk satu toko kecil, dipakai pemilik lewat HP. Prinsipnya transaction-first: pemilik langsung mencatat transaksi, dan barang serta harga yang belum ada dibuat di layar transaksi yang sama.
 
-Status: **tahap 1 selesai** (Tugas 01 sampai 10 di `docs/instruksi/`).
+Status: **tahap 1 selesai** (Tugas 01 sampai 11 di `docs/instruksi/`).
 
 ## Tech stack
 
@@ -66,6 +66,7 @@ Tes e2e berjalan dengan satu worker dan emulasi layar HP, karena semua tes berba
 - **Login** satu pengguna (pemilik toko), dengan pembatasan percobaan masuk
 - **Barang dan riwayat harga**: tambah, ubah, cari, tandai sudah diperiksa. Harga adalah riwayat: perubahan harga menambah baris baru, baris lama tidak diubah. Barang tidak bisa dihapus, hanya dinonaktifkan
 - **Pelanggan**: tambah, ubah, cari, hapus (jika belum punya transaksi). Nomor HP dinormalkan ke format `62...` dan tidak boleh ganda
+- **Tambah beruntun**: form tambah barang dan tambah pelanggan punya tombol "Simpan" (kembali ke daftar) dan "Simpan dan tambah lagi" (membuka form kosong lagi)
 - **Transaksi baru**: form Livewire untuk mencari barang, membuat barang baru beserta harganya, memilih atau membuat pelanggan, lalu menyimpan semuanya sekaligus dalam satu transaksi database. Barang dari form berstatus "Perlu dirapikan"
 - **Daftar dan detail transaksi**: filter tanggal, status, status bayar, dan pencarian. Transaksi bisa dibatalkan dan status bayarnya bisa diubah. Isi transaksi yang sudah disimpan tidak bisa diubah
 - **Beranda dan laporan harian**: omzet, jumlah transaksi, rata-rata nota, piutang, rekap per saluran, dan barang terlaris. Hanya transaksi yang dikonfirmasi yang dihitung

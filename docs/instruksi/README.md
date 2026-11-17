@@ -19,12 +19,13 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 | `08-daftar-dan-detail-transaksi.md` | Daftar, detail, batal, ubah status bayar | Model AI |
 | `09-laporan-harian.md` | Beranda dan laporan harian | Model AI |
 | `10-pemeriksaan-akhir.md` | Pemeriksaan menyeluruh | Model AI |
+| `11-alur-tambah-barang-dan-pelanggan.md` | Tombol "Simpan" dan "Simpan dan tambah lagi" di form tambah barang dan pelanggan | Model AI |
 
 ## Cara pakai
 
 1. Salin folder ini ke dalam proyek, misalnya ke `docs/instruksi/`.
 2. Pindahkan `CLAUDE.md` ke akar proyek jika Anda memakai Claude Code. File itu ringkasan `00-aturan-umum.md` dan mengandaikan file tugas berada di `docs/instruksi/`. Untuk alat lain yang membaca file aturan otomatis, salin isinya ke file yang sesuai, misalnya `AGENTS.md`.
-3. Kerjakan tugas berurutan dari 01 sampai 10. Satu tugas satu sesi percakapan baru.
+3. Kerjakan tugas berurutan dari 01 sampai 11. Satu tugas satu sesi percakapan baru. Tugas 01 sampai 10 membangun tahap 1. Tugas 11 dan seterusnya adalah perbaikan setelah tahap 1 selesai.
 4. Di awal setiap sesi, berikan perintah seperti ini:
 
    ```
@@ -56,7 +57,8 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 | Penamaan kode | Bahasa Inggris. Teks di layar bahasa Indonesia |
 | Database | SQLite (bawaan Laravel). Bisa diganti MySQL lewat `.env` tanpa mengubah kode |
 | Pengguna | Satu akun pemilik, tanpa pendaftaran |
-| Tes | PHPUnit bawaan Laravel |
+| Tes | PHPUnit bawaan Laravel. Tes e2e Playwright di `tests/e2e/` ditambahkan di luar file tugas dan mulai dirawat lewat file tugas sejak tugas 11 |
+| Setelah tambah barang atau pelanggan | "Simpan" kembali ke daftar, "Simpan dan tambah lagi" membuka form kosong lagi (tugas 11, menggantikan redirect ke halaman detail di tugas 04 dan 05) |
 
 ## Yang sengaja belum dibuat
 
