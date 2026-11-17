@@ -110,6 +110,8 @@ Aksi, hanya untuk transaksi `confirmed`:
 - Form batal: kolom teks `reason` (placeholder `Alasan pembatalan (opsional)`) dan tombol merah "Batalkan transaksi" dengan `onsubmit="return confirm('Batalkan transaksi ini? Tindakan ini tidak bisa dibatalkan.')"`.
 - Teks kecil di bawahnya: `Transaksi yang sudah disimpan tidak bisa diubah. Untuk koreksi, batalkan lalu buat transaksi baru.`
 
+Catatan: tugas 15 (`15-draf-dan-ubah-transaksi.md`) mengganti bagian aksi ini: menambah tombol "Ubah transaksi" dan "Hapus draf", dan mengganti teks kecil di atas sesuai `Transaction::isEditable()`.
+
 Untuk transaksi `cancelled`, jangan tampilkan kedua form itu.
 
 ### 5. Perbarui pengalihan di form transaksi
@@ -144,7 +146,7 @@ Di `TransactionForm::save()`, ganti `url('/transactions/'.$transaction->id)` den
 
 ## Jangan lakukan
 
-- Jangan membuat halaman ubah transaksi.
-- Jangan membuat fitur hapus transaksi.
+- Jangan membuat halaman ubah transaksi. Halaman itu dibuat nanti di tugas 15.
+- Jangan membuat fitur hapus transaksi. Tugas 15 nanti hanya mengizinkan hapus draf.
 - Jangan membuat fitur salin transaksi, cetak, atau kirim ke WhatsApp.
 - Jangan mengubah `TransactionService`, kecuali ada tes dari tugas 06 yang gagal.
