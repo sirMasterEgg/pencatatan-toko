@@ -22,6 +22,17 @@ class Format
         return number_format((float) $value, 0, ',', '.');
     }
 
+    /**
+     * Jumlah untuk diisikan kembali ke kolom form: tanpa titik ribuan, koma sebagai desimal.
+     * Contoh: 1000 menjadi "1000", "0.500" menjadi "0,5".
+     */
+    public static function quantityInput(int|float|string|null $quantity): string
+    {
+        $text = number_format((float) ($quantity ?? 0), 3, ',', '');
+
+        return rtrim(rtrim($text, '0'), ',');
+    }
+
     public static function quantity(int|float|string|null $quantity): string
     {
         $text = number_format((float) ($quantity ?? 0), 3, ',', '.');

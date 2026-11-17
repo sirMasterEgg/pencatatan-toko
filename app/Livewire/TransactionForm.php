@@ -4,17 +4,27 @@ namespace App\Livewire;
 
 use App\Enums\Channel;
 use App\Enums\PaymentStatus;
+use App\Enums\TransactionStatus;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\Transaction;
+use App\Models\TransactionItem;
 use App\Services\TransactionService;
 use App\Support\Format;
 use App\Support\Parse;
 use App\Support\Phone;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class TransactionForm extends Component
 {
+    #[Locked]
+    public ?int $transactionId = null;
+
+    #[Locked]
+    public ?string $originalStatus = null;
+
     public string $transactedAt = '';
 
     public string $channel = 'store';
@@ -39,10 +49,49 @@ class TransactionForm extends Component
 
     public array $items = [];
 
-    public function mount(): void
+    public function mount(?Transaction $transaction = null): void
     {
+        if ($transaction?->exists) {
+            $this->fillFromTransaction($transaction);
+
+            return;
+        }
+
         $this->transactedAt = now()->format('Y-m-d\TH:i');
         $this->items = [$this->emptyRow()];
+    }
+
+    private function fillFromTransaction(Transaction $transaction): void
+    {
+        $transaction->load('items.product.currentPrice', 'customer');
+
+        $this->transactionId = $transaction->id;
+        $this->originalStatus = $transaction->status->value;
+        $this->transactedAt = $transaction->transacted_at->format('Y-m-d\TH:i');
+        $this->channel = $transaction->channel->value;
+        $this->paymentStatus = $transaction->payment_status->value;
+        $this->note = $transaction->note ?? '';
+
+        if ($transaction->customer) {
+            $this->selectCustomer($transaction->customer->id);
+        }
+
+        $this->items = $transaction->items
+            ->map(fn (TransactionItem $item) => array_merge($this->emptyRow(), [
+                'mode' => 'existing',
+                'product_id' => $item->product_id,
+                'name' => $item->product->name,
+                'unit' => $item->product->unit,
+                'list_price' => $item->product->currentPrice?->sell_price,
+                'quantity' => Format::quantityInput($item->quantity),
+                'unit_price' => Format::thousands($item->unit_price),
+                'discount' => Format::thousands($item->discount),
+            ]))
+            ->all();
+
+        if (count($this->items) === 0) {
+            $this->items = [$this->emptyRow()];
+        }
     }
 
     private function emptyRow(): array
@@ -240,6 +289,16 @@ class TransactionForm extends Component
 
     public function save(TransactionService $service)
     {
+        return $this->persist($service, TransactionStatus::Confirmed);
+    }
+
+    public function saveDraft(TransactionService $service)
+    {
+        return $this->persist($service, TransactionStatus::Draft);
+    }
+
+    private function persist(TransactionService $service, TransactionStatus $status)
+    {
         $this->resetErrorBag();
 
         $this->items = array_values(array_filter(
@@ -295,16 +354,28 @@ class TransactionForm extends Component
             default => null,
         };
 
-        $transaction = $service->create([
+        $data = [
             'transacted_at' => str_replace('T', ' ', $this->transactedAt),
             'channel' => $this->channel,
             'payment_status' => $this->paymentStatus,
             'note' => $this->note !== '' ? $this->note : null,
             'customer' => $customer,
             'items' => $items,
-        ]);
+        ];
 
-        session()->flash('success', 'Transaksi '.$transaction->number.' berhasil disimpan.');
+        if ($this->transactionId !== null) {
+            $transaction = $service->update(Transaction::findOrFail($this->transactionId), $data, $status);
+        } else {
+            $transaction = $service->create($data, $status);
+        }
+
+        $message = match (true) {
+            $status === TransactionStatus::Draft => 'Draf '.$transaction->number.' berhasil disimpan.',
+            $this->originalStatus === TransactionStatus::Confirmed->value => 'Transaksi '.$transaction->number.' berhasil diperbarui.',
+            default => 'Transaksi '.$transaction->number.' berhasil disimpan.',
+        };
+
+        session()->flash('success', $message);
 
         return $this->redirect(route('transactions.show', $transaction));
     }

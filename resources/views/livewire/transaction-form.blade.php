@@ -1,5 +1,7 @@
 <div>
     <form wire:submit="save">
+        @error('status') <div class="alert alert-danger">{{ $message }}</div> @enderror
+
         <div class="card mb-3">
             <div class="card-body">
                 <h2 class="h6">Data transaksi</h2>
@@ -189,9 +191,19 @@
             </div>
         </div>
 
-        <div class="sticky-actions bg-white border-top p-3 d-flex justify-content-between align-items-center">
-            <div>Total <strong>{{ \App\Support\Format::rupiah($this->total()) }}</strong></div>
-            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">Simpan transaksi</button>
+        <div class="sticky-actions bg-white border-top p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>Total</span>
+                <strong>{{ \App\Support\Format::rupiah($this->total()) }}</strong>
+            </div>
+            <div class="d-flex gap-2">
+                @if ($originalStatus === 'confirmed')
+                    <button type="submit" class="btn btn-primary flex-fill" wire:loading.attr="disabled">Simpan perubahan</button>
+                @else
+                    <button type="button" class="btn btn-outline-secondary flex-fill" wire:click="saveDraft" wire:loading.attr="disabled">Simpan draf</button>
+                    <button type="submit" class="btn btn-primary flex-fill" wire:loading.attr="disabled">Simpan transaksi</button>
+                @endif
+            </div>
         </div>
     </form>
 </div>

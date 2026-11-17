@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Enums\ProductStatus;
+use App\Enums\TransactionStatus;
 use App\Livewire\TransactionForm;
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -202,5 +205,124 @@ class TransactionFormTest extends TestCase
         $this->assertSame(115000, $item->unit_price);
         $this->assertSame(1000, $item->discount);
         $this->assertSame(229000, $item->subtotal);
+    }
+
+    private function unpaidTransaction(array $extra = []): Transaction
+    {
+        $gula = Product::factory()->create(['name' => 'GULA', 'unit' => 'kg']);
+        ProductPrice::factory()->for($gula)->create(['sell_price' => 18000, 'effective_from' => now()->subDay()]);
+
+        return app(TransactionService::class)->create(array_merge([
+            'transacted_at' => now()->subHour()->format('Y-m-d H:i'),
+            'channel' => 'whatsapp',
+            'payment_status' => 'unpaid',
+            'note' => 'Antar sore',
+            'customer' => ['name' => 'Bu Sari', 'phone' => '0812-0000-1234'],
+            'items' => [['product_id' => $gula->id, 'quantity' => '1,5', 'unit_price' => 18000, 'discount' => 1000, 'price_mode' => 'this_only']],
+        ], $extra));
+    }
+
+    public function test_save_draft_creates_draft_and_redirects(): void
+    {
+        $product = Product::factory()->create(['name' => 'MI INSTAN', 'unit' => 'dus']);
+        ProductPrice::factory()->for($product)->create(['sell_price' => 118000]);
+
+        $component = Livewire::test(TransactionForm::class)
+            ->call('selectProduct', 0, $product->id)
+            ->call('saveDraft')
+            ->assertHasNoErrors();
+
+        $transaction = Transaction::firstOrFail();
+        $this->assertSame(TransactionStatus::Draft, $transaction->status);
+        $component->assertRedirect('/transactions/'.$transaction->id);
+        $this->assertSame('Draf '.$transaction->number.' berhasil disimpan.', session('success'));
+    }
+
+    public function test_edit_mode_loads_transaction_into_form(): void
+    {
+        $transaction = $this->unpaidTransaction();
+
+        Livewire::test(TransactionForm::class, ['transaction' => $transaction])
+            ->assertSet('transactionId', $transaction->id)
+            ->assertSet('originalStatus', 'confirmed')
+            ->assertSet('channel', 'whatsapp')
+            ->assertSet('paymentStatus', 'unpaid')
+            ->assertSet('note', 'Antar sore')
+            ->assertSet('customerMode', 'existing')
+            ->assertSet('customerId', Customer::firstOrFail()->id)
+            ->assertSet('items.0.mode', 'existing')
+            ->assertSet('items.0.name', 'GULA')
+            ->assertSet('items.0.quantity', '1,5')
+            ->assertSet('items.0.unit_price', '18.000')
+            ->assertSet('items.0.discount', '1.000')
+            ->assertSet('items.0.list_price', 18000)
+            ->assertSee('Simpan perubahan')
+            ->assertDontSee('Simpan draf');
+    }
+
+    public function test_edit_mode_save_updates_same_transaction(): void
+    {
+        $transaction = $this->unpaidTransaction();
+
+        $component = Livewire::test(TransactionForm::class, ['transaction' => $transaction])
+            ->set('items.0.quantity', '2')
+            ->set('items.0.discount', '0')
+            ->set('paymentStatus', 'paid')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $component->assertRedirect('/transactions/'.$transaction->id);
+        $this->assertSame(1, Transaction::count());
+        $this->assertSame(36000, $transaction->fresh()->total);
+        $this->assertFalse($transaction->fresh()->isEditable());
+        $this->assertSame('Transaksi '.$transaction->number.' berhasil diperbarui.', session('success'));
+    }
+
+    public function test_edit_mode_of_confirmed_transaction_cannot_save_as_draft(): void
+    {
+        $transaction = $this->unpaidTransaction();
+
+        Livewire::test(TransactionForm::class, ['transaction' => $transaction])
+            ->call('saveDraft')
+            ->assertHasErrors('status')
+            ->assertSee('Transaksi yang sudah dikonfirmasi tidak bisa dijadikan draf.');
+
+        $this->assertSame(TransactionStatus::Confirmed, $transaction->fresh()->status);
+    }
+
+    public function test_draft_edit_mode_shows_both_buttons_and_confirms(): void
+    {
+        $draft = $this->unpaidTransaction();
+        $draft->update(['status' => TransactionStatus::Draft]);
+
+        Livewire::test(TransactionForm::class, ['transaction' => $draft->fresh()])
+            ->assertSee('Simpan draf')
+            ->assertSee('Simpan transaksi')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertSame(TransactionStatus::Confirmed, $draft->fresh()->status);
+        $this->assertSame('Transaksi '.$draft->number.' berhasil disimpan.', session('success'));
+    }
+
+    public function test_transaction_paid_after_form_opened_is_rejected(): void
+    {
+        $transaction = $this->unpaidTransaction();
+
+        $component = Livewire::test(TransactionForm::class, ['transaction' => $transaction]);
+        $transaction->update(['payment_status' => 'paid']);
+
+        $component->set('items.0.quantity', '5')
+            ->call('save')
+            ->assertHasErrors('status');
+
+        $this->assertSame(26000, $transaction->fresh()->total);
+    }
+
+    public function test_transaction_id_cannot_be_changed_from_browser(): void
+    {
+        $this->expectException(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
+
+        Livewire::test(TransactionForm::class)->set('transactionId', 1);
     }
 }
