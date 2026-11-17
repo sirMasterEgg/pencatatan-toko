@@ -6,7 +6,10 @@ test('pelanggan: tambah, cari, ubah, hapus', async ({ page }) => {
     await page.goto('/customers/create');
     await page.getByLabel('Nama').fill(name);
     await page.getByLabel('Nomor HP').fill('0812-0000-' + String(Date.now()).slice(-4));
-    await page.getByRole('button', { name: 'Simpan' }).click();
+    await page.getByRole('button', { name: 'Simpan', exact: true }).click();
+
+    // Tugas 11: setelah simpan kembali ke daftar pelanggan.
+    await page.waitForURL(/\/customers$/);
     await expect(page.getByText('Pelanggan berhasil ditambahkan.')).toBeVisible();
 
     await page.goto('/customers');
@@ -26,4 +29,22 @@ test('pelanggan: tambah, cari, ubah, hapus', async ({ page }) => {
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(overflow).toBe(false);
+});
+
+test('pelanggan: simpan dan tambah lagi membuka form kosong', async ({ page }) => {
+    const name = `Pak Budi ${Date.now()}`;
+
+    await page.goto('/customers/create');
+    await page.getByLabel('Nama').fill(name);
+    await page.getByRole('button', { name: 'Simpan dan tambah lagi' }).click();
+
+    await page.waitForURL(/\/customers\/create$/);
+    await expect(page.getByText('Pelanggan berhasil ditambahkan.')).toBeVisible();
+    await expect(page.getByLabel('Nama')).toHaveValue('');
+
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+    expect(overflow).toBe(false);
+
+    await page.goto(`/customers?q=${encodeURIComponent(name)}`);
+    await expect(page.getByRole('link', { name })).toBeVisible();
 });

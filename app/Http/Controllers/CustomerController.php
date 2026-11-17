@@ -42,9 +42,11 @@ class CustomerController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $customer = Customer::create($this->validated($request));
+        Customer::create($this->validated($request));
 
-        return redirect()->route('customers.show', $customer)->with('success', 'Pelanggan berhasil ditambahkan.');
+        $route = $request->input('after_save') === 'add_another' ? 'customers.create' : 'customers.index';
+
+        return redirect()->route($route)->with('success', 'Pelanggan berhasil ditambahkan.');
     }
 
     public function show(Customer $customer): View

@@ -98,6 +98,7 @@ Route::post('/products/{product}/mark-reviewed', [ProductController::class, 'mar
 - Jika `findByNameAndUnit` menemukan barang, kembalikan galat pada `name`: `Barang dengan nama dan satuan ini sudah ada.`
 - Simpan lewat `ProductService::create` dengan status `Active`.
 - Redirect ke `products.show` dengan pesan sukses `Barang berhasil ditambahkan.`
+- Catatan: tujuan redirect ini diganti oleh tugas 11 (`11-alur-tambah-barang-dan-pelanggan.md`). Teks pesannya tetap.
 
 `show`
 
