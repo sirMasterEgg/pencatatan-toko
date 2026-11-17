@@ -13,6 +13,9 @@ test('barang: tambah, lihat detail, tambah harga, ubah nama', async ({ page }) =
     await page.waitForURL(/\/products$/);
     await expect(page.getByText('Barang berhasil ditambahkan.')).toBeVisible();
 
+    // Tugas 14: nama tersimpan dalam huruf besar.
+    await expect(page.getByText(name.toUpperCase(), { exact: true })).toBeVisible();
+
     await page.goto(`/products?q=${encodeURIComponent(name)}`);
     await page.getByRole('link', { name }).click();
     await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
@@ -52,4 +55,30 @@ test('barang: simpan dan tambah lagi membuka form kosong', async ({ page }) => {
 
     await page.goto(`/products?q=${encodeURIComponent(name)}`);
     await expect(page.getByRole('link', { name })).toBeVisible();
+});
+
+test('barang: kolom harga langsung diberi titik ribuan', async ({ page }) => {
+    const name = `Minyak E2E ${Date.now()}`;
+
+    await page.goto('/products/create');
+    await page.getByLabel('Nama').fill(name);
+    await page.getByLabel('Satuan').selectOption('liter');
+
+    await page.getByLabel('Harga jual').pressSequentially('1500000');
+    await expect(page.getByLabel('Harga jual')).toHaveValue('1.500.000');
+
+    // Menyisipkan angka di tengah tetap rapi dan kursor tidak lompat ke akhir.
+    await page.getByLabel('Harga modal').pressSequentially('12000');
+    await page.getByLabel('Harga modal').press('Home');
+    await page.getByLabel('Harga modal').press('ArrowRight');
+    await page.getByLabel('Harga modal').pressSequentially('5');
+    await expect(page.getByLabel('Harga modal')).toHaveValue('152.000');
+    await page.getByLabel('Harga modal').pressSequentially('9');
+    await expect(page.getByLabel('Harga modal')).toHaveValue('1.592.000');
+
+    await page.getByRole('button', { name: 'Simpan', exact: true }).click();
+    await page.waitForURL(/\/products$/);
+
+    await page.goto(`/products?q=${encodeURIComponent(name)}`);
+    await expect(page.getByText('Rp1.500.000')).toBeVisible();
 });

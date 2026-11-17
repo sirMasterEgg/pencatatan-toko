@@ -36,6 +36,8 @@ class TransactionService
     }
 
     public function create(array $data): Transaction { /* ... */ }
+    // Sejak tugas 15: create(array $data, TransactionStatus $status = TransactionStatus::Confirmed),
+    // ditambah update() dan deleteDraft(). Lihat 15-draf-dan-ubah-transaksi.md.
 
     public function cancel(Transaction $transaction, ?string $reason = null): Transaction { /* ... */ }
 
@@ -98,7 +100,7 @@ Validasi dilakukan di dalam service dengan `Validator::make($data, $rules, $mess
 | `items.*.new_product.name` | wajib jika `items.*.product_id` kosong; string; maksimal 255 |
 | `items.*.new_product.unit` | wajib jika `items.*.product_id` kosong; salah satu dari `config('shop.units')` |
 | `items.*.new_product.cost_price` | opsional, integer, minimal 0 |
-| `items.*.quantity` | wajib, numerik, `gt:0` |
+| `items.*.quantity` | wajib, numerik, `gt:0`. Sejak tugas 12: juga `decimal:0,3`, dan bilangan bulat untuk satuan di luar `config('shop.decimal_units')` |
 | `items.*.unit_price` | wajib, integer, minimal 0 |
 | `items.*.discount` | opsional, integer, minimal 0 |
 | `items.*.price_mode` | opsional, salah satu dari `this_only`, `new_price` |
@@ -138,7 +140,7 @@ Semua langkah berikut dijalankan di dalam satu `DB::transaction(function () { ..
    - Ada `customer.id`: pakai id itu.
    - Selain itu: panggil `CustomerService::findOrCreate(name, phone, address)` dan pakai id hasilnya.
 3. Buat nomor transaksi (bagian 5).
-4. Buat baris `transactions` dengan `status` `confirmed`, `input_source` `form`, `total` `0`, dan data lain dari masukan.
+4. Buat baris `transactions` dengan `status` `confirmed`, `input_source` `form`, `total` `0`, dan data lain dari masukan. (Sejak tugas 15, status mengikuti parameter `$status`, bawaan `confirmed`.)
 5. Untuk setiap item, sesuai urutan:
 
    **a. Jika item punya `product_id` (barang lama):**
@@ -238,7 +240,7 @@ Transaksi yang dibatalkan tetap ikut dihitung dalam urutan.
 
 ## Jangan lakukan
 
-- Jangan membuat fitur ubah isi transaksi.
+- Jangan membuat fitur ubah isi transaksi. Fitur itu dibuat nanti di tugas 15 dengan aturan yang jelas.
 - Jangan menghapus baris transaksi saat dibatalkan.
 - Jangan membuat tabel pembayaran atau cicilan.
 - Jangan mencatat stok.

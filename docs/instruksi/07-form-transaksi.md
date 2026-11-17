@@ -166,6 +166,8 @@ Jumlah `rowSubtotal` semua baris.
 4. Jangan menangkap `ValidationException`. Livewire menampilkannya sendiri.
 5. Jika berhasil: `session()->flash('success', 'Transaksi '.$transaction->number.' berhasil disimpan.')`, lalu `return $this->redirect(url('/transactions/'.$transaction->id));`
 
+Catatan: tugas 16 (`16-form-draf-dan-ubah.md`) memindahkan isi `save` ke method privat `persist`, menambah `saveDraft`, dan membuat `mount` bisa menerima transaksi untuk diubah.
+
 Pemetaan galat dari service ke form. Service memakai kunci seperti `items.0.new_product.name`, sedangkan form memakai `items.0.name`. Di view, tampilkan galat dengan memeriksa beberapa kunci:
 
 | Kolom di form | Kunci galat yang diperiksa |
@@ -239,6 +241,8 @@ Untuk kolom Jumlah, Harga satuan, dan Diskon pakai `wire:model.live.blur` agar s
 
 Harga satuan dan diskon memakai `step="1"` dan `inputmode="numeric"`.
 
+Catatan: tugas 12 (`12-jumlah-desimal.md`) mengganti kolom Jumlah menjadi `type="text"` agar koma diterima. Tugas 13 (`13-titik-ribuan-harga.md`) mengganti kolom harga, harga modal, dan diskon menjadi `type="text"` dengan `data-rupiah`.
+
 Di bagian bawah setiap kartu:
 
 - Subtotal baris: `Format::rupiah($this->rowSubtotal($row))`.
@@ -256,6 +260,8 @@ Satu `div` dengan kelas `sticky-actions bg-white border-top p-3`:
 
 - Kiri: teks `Total` dan `Format::rupiah($this->total())` dengan huruf tebal.
 - Kanan: tombol `type="submit"` bertulisan `Simpan transaksi`, kelas `btn btn-primary`, dengan `wire:loading.attr="disabled"`.
+
+Catatan: tugas 16 mengubah bilah bawah ini menjadi dua baris dan menambah tombol "Simpan draf".
 
 Semua tombol selain tombol simpan wajib `type="button"`, agar tidak ikut mengirim form.
 
@@ -290,7 +296,7 @@ Semua tombol selain tombol simpan wajib `type="button"`, agar tidak ikut mengiri
 
 - Jangan memakai komponen satu file (awalan emoji petir) atau multi-file.
 - Jangan memakai `Route::livewire()`.
-- Jangan menulis JavaScript sendiri. Jangan memasang Alpine.
+- Jangan menulis JavaScript sendiri. Jangan memasang Alpine. (Tugas 13 nanti menambah satu file `resources/js/rupiah.js`. Itu satu-satunya pengecualian.)
 - Jangan menyalin rumus subtotal atau aturan harga ke dalam komponen.
-- Jangan membuat fitur simpan sebagai draf.
+- Jangan membuat fitur simpan sebagai draf. Fitur itu dibuat nanti di tugas 15 dan 16.
 - Jangan membuat komponen Livewire lain untuk baris atau pencarian. Cukup satu komponen.

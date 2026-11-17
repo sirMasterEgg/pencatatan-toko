@@ -39,7 +39,7 @@ test('semua halaman rapi di lebar 375px', async ({ page }) => {
 
     await page.goto('/transactions/create');
     await page.getByPlaceholder('Ketik nama barang').fill(`Barang HP ${suffix}`);
-    await page.getByRole('button', { name: new RegExp(`Barang HP ${suffix}`) }).first().click();
+    await page.getByRole('button', { name: new RegExp(`Barang HP ${suffix}`, 'i') }).first().click();
     await page.getByRole('button', { name: 'Simpan transaksi' }).click();
     await page.waitForURL(/\/transactions\/\d+$/);
     const transactionUrl = page.url();

@@ -57,6 +57,7 @@ Perilaku:
 
 - Jalankan di dalam `DB::transaction`.
 - Simpan `name` yang sudah di-`trim`.
+- Catatan: sejak tugas 14 (`14-nama-barang-huruf-besar.md`), nama disimpan lewat `ProductService::normalizeName`, yaitu di-`trim` lalu huruf besar.
 - Buat barang, isi `created_from_transaction_id` dengan `$sourceTransactionId`.
 - Panggil `addPrice` untuk membuat baris harga pertama.
 - Kembalikan barang.
@@ -149,6 +150,7 @@ Tidak ada rute untuk mengubah atau menghapus harga.
 - Dipakai `create` dan `edit`.
 - `select` satuan diisi dari `config('shop.units')`.
 - Kolom harga jual dan harga modal hanya muncul di `create`. Pakai `type="number"`, `min="0"`, `step="1"`, `inputmode="numeric"`.
+- Catatan: sejak tugas 13 (`13-titik-ribuan-harga.md`), semua kolom uang memakai `type="text"` dengan `data-rupiah` agar diberi titik ribuan saat diketik.
 - Tiap kolom menampilkan galat dengan `@error`.
 
 `show`

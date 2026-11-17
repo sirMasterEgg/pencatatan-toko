@@ -7,6 +7,7 @@ use App\Enums\TransactionStatus;
 use App\Models\Product;
 use App\Models\TransactionItem;
 use App\Services\ProductService;
+use App\Support\Parse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -50,6 +51,11 @@ class ProductController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $request->merge([
+            'sell_price' => Parse::rupiah($request->input('sell_price')),
+            'cost_price' => Parse::rupiah($request->input('cost_price')),
+        ]);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'unit' => ['required', Rule::in(config('shop.units'))],
@@ -127,7 +133,7 @@ class ProductController extends Controller
         }
 
         $product->fill([
-            'name' => trim($data['name']),
+            'name' => ProductService::normalizeName($data['name']),
             'unit' => $data['unit'],
             'category' => $data['category'] ?? null,
             'code' => $data['code'] ?? null,

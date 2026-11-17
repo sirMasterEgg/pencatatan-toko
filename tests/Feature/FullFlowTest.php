@@ -24,7 +24,7 @@ class FullFlowTest extends TestCase
         // 2. Barang lewat halaman barang
         $this->post('/products', ['name' => 'Mi Instan', 'unit' => 'dus', 'sell_price' => 118000, 'cost_price' => 105000])
             ->assertRedirect();
-        $mi = Product::where('name', 'Mi Instan')->firstOrFail();
+        $mi = Product::where('name', 'MI INSTAN')->firstOrFail();
 
         // 3. Form transaksi
         $component = Livewire::test(TransactionForm::class)
@@ -49,7 +49,7 @@ class FullFlowTest extends TestCase
         $this->assertSame(248000, $transaction->total);
         $this->assertSame(TransactionStatus::Confirmed, $transaction->status);
         $this->assertNotNull(Customer::where('phone', '6281200001234')->first());
-        $gula = Product::where('name', 'Gula')->firstOrFail();
+        $gula = Product::where('name', 'GULA')->firstOrFail();
         $this->assertSame(ProductStatus::NeedsReview, $gula->status);
         $this->assertSame(118000, $mi->fresh()->currentPrice->sell_price);
 
@@ -61,7 +61,7 @@ class FullFlowTest extends TestCase
             ->assertSee('Harga daftar');
 
         // 6. Barang perlu dirapikan
-        $this->get('/products?status=needs_review')->assertOk()->assertSee('Gula');
+        $this->get('/products?status=needs_review')->assertOk()->assertSee('GULA');
 
         // 7. Tandai sudah diperiksa
         $this->post("/products/{$gula->id}/mark-reviewed")->assertRedirect();
@@ -76,6 +76,6 @@ class FullFlowTest extends TestCase
 
         // 10. Omzet kembali Rp0, barang tetap ada
         $this->get('/reports/daily')->assertOk()->assertSee('Rp0');
-        $this->assertNotNull(Product::where('name', 'Gula')->first());
+        $this->assertNotNull(Product::where('name', 'GULA')->first());
     }
 }
