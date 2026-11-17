@@ -64,6 +64,23 @@ class TransactionController extends Controller
         ]);
     }
 
+    public function edit(Transaction $transaction): View|RedirectResponse
+    {
+        if (! $transaction->isEditable()) {
+            return redirect()->route('transactions.show', $transaction)
+                ->with('error', 'Transaksi ini tidak bisa diubah karena sudah dibayar atau dibatalkan.');
+        }
+
+        return view('transactions.edit', ['transaction' => $transaction]);
+    }
+
+    public function destroy(Transaction $transaction, TransactionService $service): RedirectResponse
+    {
+        $service->deleteDraft($transaction);
+
+        return redirect()->route('transactions.index')->with('success', 'Draf '.$transaction->number.' berhasil dihapus.');
+    }
+
     public function cancel(Request $request, Transaction $transaction, TransactionService $service): RedirectResponse
     {
         $request->validate(['reason' => ['nullable', 'string', 'max:255']]);

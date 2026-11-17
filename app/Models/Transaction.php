@@ -41,6 +41,15 @@ class Transaction extends Model
         return $this->hasMany(TransactionItem::class);
     }
 
+    /**
+     * Isi transaksi boleh diubah jika masih draf, atau sudah dikonfirmasi tetapi belum dibayar sama sekali.
+     */
+    public function isEditable(): bool
+    {
+        return $this->status === TransactionStatus::Draft
+            || ($this->status === TransactionStatus::Confirmed && $this->payment_status === PaymentStatus::Unpaid);
+    }
+
     public function scopeConfirmed(Builder $query): void
     {
         $query->where('status', TransactionStatus::Confirmed);
