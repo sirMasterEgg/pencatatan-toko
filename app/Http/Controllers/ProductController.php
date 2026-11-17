@@ -63,7 +63,7 @@ class ProductController extends Controller
             throw ValidationException::withMessages(['name' => 'Barang dengan nama dan satuan ini sudah ada.']);
         }
 
-        $product = $this->products->create(
+        $this->products->create(
             name: $data['name'],
             unit: $data['unit'],
             sellPrice: (int) $data['sell_price'],
@@ -73,7 +73,9 @@ class ProductController extends Controller
             code: $data['code'] ?? null,
         );
 
-        return redirect()->route('products.show', $product)->with('success', 'Barang berhasil ditambahkan.');
+        $route = $request->input('after_save') === 'add_another' ? 'products.create' : 'products.index';
+
+        return redirect()->route($route)->with('success', 'Barang berhasil ditambahkan.');
     }
 
     public function show(Product $product): View

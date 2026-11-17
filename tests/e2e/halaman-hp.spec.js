@@ -20,13 +20,21 @@ test('semua halaman rapi di lebar 375px', async ({ page }) => {
     await page.getByLabel('Nama').fill(`Barang HP ${suffix}`);
     await page.getByLabel('Satuan').selectOption('pcs');
     await page.getByLabel('Harga jual').fill('12000');
-    await page.getByRole('button', { name: 'Simpan' }).click();
+    await page.getByRole('button', { name: 'Simpan', exact: true }).click();
+    await page.waitForURL(/\/products$/);
+    await page.goto(`/products?q=${encodeURIComponent(`Barang HP ${suffix}`)}`);
+    await page.getByRole('link', { name: `Barang HP ${suffix}` }).click();
+    await page.waitForURL(/\/products\/\d+$/);
     const productUrl = page.url();
 
     await page.goto('/customers/create');
     await page.getByLabel('Nama').fill(`Pelanggan HP ${suffix}`);
     await page.getByLabel('Nomor HP').fill('0857-' + String(suffix).slice(-8));
-    await page.getByRole('button', { name: 'Simpan' }).click();
+    await page.getByRole('button', { name: 'Simpan', exact: true }).click();
+    await page.waitForURL(/\/customers$/);
+    await page.goto(`/customers?q=${encodeURIComponent(`Pelanggan HP ${suffix}`)}`);
+    await page.getByRole('link', { name: `Pelanggan HP ${suffix}` }).click();
+    await page.waitForURL(/\/customers\/\d+$/);
     const customerUrl = page.url();
 
     await page.goto('/transactions/create');
