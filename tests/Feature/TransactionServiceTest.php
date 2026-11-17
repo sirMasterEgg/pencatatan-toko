@@ -70,7 +70,7 @@ class TransactionServiceTest extends TestCase
         $this->assertSame(248000, $trx->total);
         $this->assertNotNull(Customer::where('phone', '6281200001234')->first());
 
-        $gula = Product::where('name', 'Gula')->firstOrFail();
+        $gula = Product::where('name', 'GULA')->firstOrFail();
         $this->assertSame(ProductStatus::NeedsReview, $gula->status);
         $this->assertSame($trx->id, $gula->created_from_transaction_id);
         $this->assertSame(1, $gula->prices()->count());
@@ -361,5 +361,22 @@ class TransactionServiceTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $this->service->create($this->base([$this->existingItem($product, ['quantity' => '1,2,3'])]));
+    }
+
+    public function test_new_product_name_is_saved_uppercase(): void
+    {
+        $this->service->create($this->base([$this->newItem('teh celup', 'pak')]));
+
+        $this->assertSame('TEH CELUP', Product::firstOrFail()->name);
+    }
+
+    public function test_new_item_matching_existing_uppercase_product_does_not_duplicate(): void
+    {
+        $existing = $this->productWithPrice('TEH CELUP', 'pak', 8000);
+
+        $trx = $this->service->create($this->base([$this->newItem('Teh Celup', 'pak', ['unit_price' => 8000])]));
+
+        $this->assertSame(1, Product::count());
+        $this->assertSame($existing->id, $trx->items->first()->product_id);
     }
 }

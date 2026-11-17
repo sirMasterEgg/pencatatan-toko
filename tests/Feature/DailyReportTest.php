@@ -71,7 +71,7 @@ class DailyReportTest extends TestCase
         $this->assertSame('Mi Instan', $r['top_products'][0]['name']);
         $this->assertSame(3.0, $r['top_products'][0]['quantity']);
         $this->assertSame(348000, $r['top_products'][0]['revenue']);
-        $this->assertSame('Gula', $r['top_products'][1]['name']);
+        $this->assertSame('GULA', $r['top_products'][1]['name']);
         $this->assertSame(18000, $r['top_products'][1]['revenue']);
 
         $this->assertCount(2, $r['transactions']);

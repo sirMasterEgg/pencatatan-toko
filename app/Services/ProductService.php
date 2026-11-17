@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\DB;
 
 class ProductService
 {
+    public static function normalizeName(string $name): string
+    {
+        return mb_strtoupper(trim($name));
+    }
+
     public function findByNameAndUnit(string $name, string $unit): ?Product
     {
         $lowerName = mb_strtolower(trim($name));
@@ -31,7 +36,7 @@ class ProductService
     ): Product {
         return DB::transaction(function () use ($name, $unit, $sellPrice, $costPrice, $status, $sourceTransactionId, $category, $code) {
             $product = Product::create([
-                'name' => trim($name),
+                'name' => self::normalizeName($name),
                 'unit' => $unit,
                 'category' => $category,
                 'code' => $code,

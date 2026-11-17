@@ -109,7 +109,7 @@ class TransactionFormTest extends TestCase
         $component->assertRedirect('/transactions/'.$transaction->id);
 
         $this->assertSame(248000, $transaction->total);
-        $this->assertSame(ProductStatus::NeedsReview, Product::where('name', 'Gula')->firstOrFail()->status);
+        $this->assertSame(ProductStatus::NeedsReview, Product::where('name', 'GULA')->firstOrFail()->status);
         $this->assertSame(1, $mi->prices()->count());
     }
 

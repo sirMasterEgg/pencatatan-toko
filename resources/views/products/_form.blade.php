@@ -1,7 +1,7 @@
 @php($editing = isset($product))
 <div class="mb-3">
     <label for="name" class="form-label">Nama</label>
-    <input type="text" id="name" name="name" value="{{ old('name', $product->name ?? '') }}" class="form-control @error('name') is-invalid @enderror" required>
+    <input type="text" id="name" name="name" value="{{ old('name', $product->name ?? '') }}" class="form-control text-uppercase @error('name') is-invalid @enderror" autocapitalize="characters" required>
     @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
 </div>
 <div class="mb-3">

@@ -13,6 +13,9 @@ test('barang: tambah, lihat detail, tambah harga, ubah nama', async ({ page }) =
     await page.waitForURL(/\/products$/);
     await expect(page.getByText('Barang berhasil ditambahkan.')).toBeVisible();
 
+    // Tugas 14: nama tersimpan dalam huruf besar.
+    await expect(page.getByText(name.toUpperCase(), { exact: true })).toBeVisible();
+
     await page.goto(`/products?q=${encodeURIComponent(name)}`);
     await page.getByRole('link', { name }).click();
     await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();

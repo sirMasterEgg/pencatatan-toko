@@ -102,7 +102,7 @@
                             </div>
                             <div class="mb-2">
                                 <label class="form-label" for="name-{{ $i }}">Nama</label>
-                                <input type="text" id="name-{{ $i }}" class="form-control @error("items.$i.new_product.name") is-invalid @enderror" wire:model="items.{{ $i }}.name">
+                                <input type="text" id="name-{{ $i }}" class="form-control text-uppercase @error("items.$i.new_product.name") is-invalid @enderror" autocapitalize="characters" wire:model="items.{{ $i }}.name">
                                 @error("items.$i.new_product.name") <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="row g-2 mb-2">

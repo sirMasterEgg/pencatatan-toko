@@ -133,7 +133,7 @@ class ProductController extends Controller
         }
 
         $product->fill([
-            'name' => trim($data['name']),
+            'name' => ProductService::normalizeName($data['name']),
             'unit' => $data['unit'],
             'category' => $data['category'] ?? null,
             'code' => $data['code'] ?? null,

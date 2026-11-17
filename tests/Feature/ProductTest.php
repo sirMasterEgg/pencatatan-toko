@@ -187,4 +187,46 @@ class ProductTest extends TestCase
             ->assertSee('value="12.000"', false)
             ->assertSee('data-rupiah', false);
     }
+
+    public function test_store_saves_name_uppercase_and_trimmed(): void
+    {
+        $this->post('/products', ['name' => '  gula pasir ', 'unit' => 'kg', 'sell_price' => 15000])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertSame('GULA PASIR', Product::firstOrFail()->name);
+    }
+
+    public function test_update_saves_name_uppercase(): void
+    {
+        $product = Product::factory()->create(['name' => 'TEH', 'unit' => 'pak']);
+
+        $this->put("/products/{$product->id}", ['name' => 'Gula Merah', 'unit' => 'pak'])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertSame('GULA MERAH', $product->fresh()->name);
+    }
+
+    public function test_duplicate_is_still_detected_case_insensitively_after_uppercase(): void
+    {
+        $this->post('/products', ['name' => 'Gula', 'unit' => 'kg', 'sell_price' => 1000]);
+        $this->post('/products', ['name' => 'gula', 'unit' => 'kg', 'sell_price' => 1000])
+            ->assertSessionHasErrors('name');
+
+        $this->assertSame(1, Product::count());
+    }
+
+    public function test_create_form_has_uppercase_class(): void
+    {
+        $this->get('/products/create')->assertOk()->assertSee('text-uppercase', false);
+    }
+
+    public function test_migration_uppercases_existing_names(): void
+    {
+        $product = Product::factory()->create(['name' => 'kopi bubuk']);
+
+        $migration = require database_path('migrations/2026_11_18_000001_uppercase_product_names.php');
+        $migration->up();
+
+        $this->assertSame('KOPI BUBUK', $product->fresh()->name);
+    }
 }
