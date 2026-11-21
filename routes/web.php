@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerPriceController;
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
@@ -31,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/transactions/{transaction}/payment-status', [TransactionController::class, 'updatePaymentStatus'])->name('transactions.payment-status');
 
     Route::resource('customers', CustomerController::class);
+    Route::post('/customers/{customer}/prices', [CustomerPriceController::class, 'store'])->name('customers.prices.store');
+    Route::post('/customers/{customer}/prices/{product}/stop', [CustomerPriceController::class, 'stop'])->name('customers.prices.stop');
 
     Route::resource('products', ProductController::class)->except(['destroy']);
     Route::post('/products/{product}/prices', [ProductPriceController::class, 'store'])->name('products.prices.store');
