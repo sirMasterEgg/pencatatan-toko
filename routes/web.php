@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\BulkPriceController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPriceController;
 use App\Http\Controllers\DailyReportController;
@@ -34,6 +35,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('customers', CustomerController::class);
     Route::post('/customers/{customer}/prices', [CustomerPriceController::class, 'store'])->name('customers.prices.store');
     Route::post('/customers/{customer}/prices/{product}/stop', [CustomerPriceController::class, 'stop'])->name('customers.prices.stop');
+
+    Route::get('/products/bulk-price', [BulkPriceController::class, 'create'])->name('products.bulk-price.create');
+    Route::post('/products/bulk-price/preview', [BulkPriceController::class, 'preview'])->name('products.bulk-price.preview');
+    Route::post('/products/bulk-price', [BulkPriceController::class, 'store'])->name('products.bulk-price.store');
 
     Route::resource('products', ProductController::class)->except(['destroy']);
     Route::post('/products/{product}/prices', [ProductPriceController::class, 'store'])->name('products.prices.store');

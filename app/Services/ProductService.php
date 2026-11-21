@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\ProductStatus;
 use App\Models\Product;
 use App\Models\ProductPrice;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 class ProductService
@@ -56,11 +57,12 @@ class ProductService
         ?int $costPrice = null,
         ?string $note = null,
         ?int $sourceTransactionId = null,
+        ?CarbonInterface $effectiveFrom = null,
     ): ProductPrice {
         return $product->prices()->create([
             'sell_price' => $sellPrice,
             'cost_price' => $costPrice,
-            'effective_from' => now(),
+            'effective_from' => $effectiveFrom ?? now(),
             'source_transaction_id' => $sourceTransactionId,
             'note' => $note,
         ]);
