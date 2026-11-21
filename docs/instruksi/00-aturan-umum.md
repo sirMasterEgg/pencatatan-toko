@@ -24,6 +24,8 @@ Yang dibuat:
 - Transaksi penjualan dan itemnya.
 - Laporan harian.
 - Draf transaksi, dan mengubah transaksi yang belum dibayar (sejak tugas 15 dan 16).
+- Harga pelanggan, yaitu harga tetap per pelanggan per barang (sejak tugas 17 dan 18).
+- Ubah harga massal dalam rupiah untuk banyak barang sekaligus (sejak tugas 19).
 
 Yang TIDAK dibuat. Jangan membuatnya walaupun terlihat berguna:
 
@@ -35,6 +37,7 @@ Yang TIDAK dibuat. Jangan membuatnya walaupun terlihat berguna:
 - Mode offline, PWA.
 - API JSON.
 - Menghapus transaksi yang sudah dikonfirmasi atau dibatalkan. Yang boleh dihapus hanya draf.
+- Harga pelanggan dalam bentuk potongan atau persen, dan perubahan harga massal dalam persen.
 
 ## 4. Tech stack
 
@@ -106,6 +109,7 @@ Dokumen desain memakai bahasa Indonesia. Kode memakai bahasa Inggris.
 | Pelanggan | `Customer` | `customers` |
 | Transaksi | `Transaction` | `transactions` |
 | Item transaksi | `TransactionItem` | `transaction_items` |
+| Harga pelanggan | `CustomerPrice` | `customer_prices` |
 
 | Istilah Indonesia | Kolom |
 |---|---|
@@ -126,6 +130,7 @@ Dokumen desain memakai bahasa Indonesia. Kode memakai bahasa Inggris.
 | Jumlah | `quantity` |
 | Harga satuan (harga saat itu) | `unit_price` |
 | Harga daftar | `list_price` |
+| Harga pelanggan (salinan di item transaksi) | `customer_price` |
 | Diskon | `discount` |
 
 | Nilai di kode | Label di layar |
@@ -147,11 +152,11 @@ Dokumen desain memakai bahasa Indonesia. Kode memakai bahasa Inggris.
 ## 8. Aturan bisnis inti
 
 1. Setiap item transaksi wajib terhubung ke satu barang. Tidak ada item berupa teks bebas.
-2. Harga adalah riwayat. Perubahan harga menambah baris baru di `product_prices`. Baris lama tidak pernah diubah atau dihapus.
+2. Harga adalah riwayat. Perubahan harga menambah baris baru di `product_prices`. Baris lama tidak pernah diubah atau dihapus. Sejak tugas 17, aturan yang sama berlaku untuk harga pelanggan di `customer_prices`.
 3. Harga yang berlaku untuk suatu barang adalah baris `product_prices` dengan `effective_from` terbaru yang tidak melewati waktu sekarang.
 4. Item transaksi menyimpan salinan harga (`unit_price`), harga daftar saat itu (`list_price`), dan satuan (`unit`). Nota lama tidak berubah ketika harga barang berubah.
 5. Barang yang dibuat dari form transaksi berstatus `needs_review`. Barang yang dibuat dari halaman barang berstatus `active`.
-6. Jika harga barang lama diubah di form transaksi, bawaannya hanya berlaku untuk nota itu. Riwayat harga bertambah hanya jika pengguna memilih "Jadikan harga baru".
+6. Jika harga barang lama diubah di form transaksi, bawaannya hanya berlaku untuk nota itu. Riwayat harga bertambah hanya jika pengguna memilih "Jadikan harga baru" (harga umum) atau, sejak tugas 18, "Jadikan harga pelanggan".
 7. Simpan transaksi bersifat utuh: barang baru, harga baru, pelanggan baru, transaksi, dan itemnya tersimpan semua atau tidak sama sekali.
 8. Isi transaksi hanya bisa diubah jika `Transaction::isEditable()` bernilai `true`: berstatus `draft`, atau berstatus `confirmed` dengan status bayar `unpaid`. Transaksi yang sudah `partial`, `paid`, atau `cancelled` tidak bisa diubah isinya. (Sebelum tugas 15: transaksi `confirmed` sama sekali tidak bisa diubah isinya.)
 9. Laporan hanya menghitung transaksi berstatus `confirmed`.
@@ -159,6 +164,8 @@ Dokumen desain memakai bahasa Indonesia. Kode memakai bahasa Inggris.
 11. Nomor HP pelanggan unik. Pencocokan pelanggan memakai nomor HP yang sudah dinormalkan.
 12. Jumlah barang boleh desimal (paling banyak 3 angka di belakang koma) hanya untuk satuan di `config('shop.decimal_units')`. Satuan lain wajib bilangan bulat (sejak tugas 12).
 13. Hanya draf yang boleh dihapus. Draf tidak masuk laporan (sejak tugas 15).
+14. Urutan harga di nota: harga khusus per nota (yang diketik di form), lalu harga pelanggan, lalu harga umum. Harga pelanggan berupa angka tetap. `list_price` di item transaksi tetap salinan harga umum, dan `customer_price` salinan harga pelanggan (sejak tugas 17 dan 18).
+15. Perubahan harga massal tidak boleh berlaku mundur, dan ditolak seluruhnya jika ada harga yang menjadi di bawah Rp0 (sejak tugas 19).
 
 ## 9. Daftar rute
 
@@ -171,6 +178,9 @@ Semua rute selain login wajib memakai middleware `auth`.
 | POST | `/logout` | `logout` | 03 |
 | GET | `/` | `dashboard` | 01, dilengkapi di 09 |
 | GET | `/products` | `products.index` | 04 |
+| GET | `/products/bulk-price` | `products.bulk-price.create` | 19 |
+| POST | `/products/bulk-price/preview` | `products.bulk-price.preview` | 19 |
+| POST | `/products/bulk-price` | `products.bulk-price.store` | 19 |
 | GET | `/products/create` | `products.create` | 04 |
 | POST | `/products` | `products.store` | 04 |
 | GET | `/products/{product}` | `products.show` | 04 |
@@ -185,6 +195,8 @@ Semua rute selain login wajib memakai middleware `auth`.
 | GET | `/customers/{customer}/edit` | `customers.edit` | 05 |
 | PUT | `/customers/{customer}` | `customers.update` | 05 |
 | DELETE | `/customers/{customer}` | `customers.destroy` | 05 |
+| POST | `/customers/{customer}/prices` | `customers.prices.store` | 17 |
+| POST | `/customers/{customer}/prices/{product}/stop` | `customers.prices.stop` | 17 |
 | GET | `/transactions` | `transactions.index` | 08 |
 | GET | `/transactions/create` | `transactions.create` | 07 |
 | GET | `/transactions/{transaction}` | `transactions.show` | 08 |
@@ -194,7 +206,7 @@ Semua rute selain login wajib memakai middleware `auth`.
 | POST | `/transactions/{transaction}/payment-status` | `transactions.payment-status` | 08 |
 | GET | `/reports/daily` | `reports.daily` | 09 |
 
-Rute `/transactions/create` harus didaftarkan sebelum `/transactions/{transaction}`.
+Rute `/transactions/create` harus didaftarkan sebelum `/transactions/{transaction}`. Rute `/products/bulk-price` harus didaftarkan sebelum `Route::resource('products', ...)`.
 
 ## 10. Struktur folder
 
@@ -203,14 +215,14 @@ app/
   Enums/            ProductStatus, TransactionStatus, PaymentStatus, Channel
   Http/Controllers/ satu controller per bagian
   Livewire/         TransactionForm
-  Models/           Product, ProductPrice, Customer, Transaction, TransactionItem, User
-  Services/         ProductService, CustomerService, TransactionService
+  Models/           Product, ProductPrice, Customer, CustomerPrice, Transaction, TransactionItem, User
+  Services/         ProductService, CustomerService, CustomerPriceService, TransactionService, BulkPriceService, DailyReportService
   Support/          Format, Parse, Phone
 config/shop.php     daftar satuan, satuan desimal, dan data akun pemilik
 resources/views/
   layouts/app.blade.php
   auth/ products/ customers/ transactions/ reports/ livewire/
-resources/js/       app.js dan rupiah.js (format titik ribuan, sejak tugas 13)
+resources/js/       app.js, rupiah.js (titik ribuan, sejak tugas 13), check-all.js ("Pilih semua", sejak tugas 19)
 tests/Feature/      satu file tes per bagian
 tests/Unit/         tes untuk Format dan Phone
 tests/e2e/          tes Playwright
