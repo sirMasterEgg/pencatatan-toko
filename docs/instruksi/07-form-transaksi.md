@@ -221,6 +221,7 @@ Isi kartu menurut `mode`:
   - Tombol "Ganti barang" (`wire:click="resetRow({{ $i }})"`).
   - Kolom Jumlah, Harga satuan, Diskon.
   - Jika `list_price` tidak `null`, `unit_price` terisi, dan `(int) unit_price` berbeda dari `list_price`: tampilkan dua pilihan radio dengan `wire:model="items.{{ $i }}.price_mode"`:
+  - (Catatan: tugas 18 mengganti pembanding ini dengan harga acuan, yaitu harga pelanggan jika ada, dan menambah pilihan ketiga "Jadikan harga pelanggan".)
     - nilai `this_only`, label `Hanya nota ini`
     - nilai `new_price`, label `Jadikan harga baru`
 
@@ -296,7 +297,7 @@ Semua tombol selain tombol simpan wajib `type="button"`, agar tidak ikut mengiri
 
 - Jangan memakai komponen satu file (awalan emoji petir) atau multi-file.
 - Jangan memakai `Route::livewire()`.
-- Jangan menulis JavaScript sendiri. Jangan memasang Alpine. (Tugas 13 nanti menambah satu file `resources/js/rupiah.js`. Itu satu-satunya pengecualian.)
+- Jangan menulis JavaScript sendiri. Jangan memasang Alpine. (Pengecualian yang diizinkan hanya `resources/js/rupiah.js` dari tugas 13 dan `resources/js/check-all.js` dari tugas 19.)
 - Jangan menyalin rumus subtotal atau aturan harga ke dalam komponen.
 - Jangan membuat fitur simpan sebagai draf. Fitur itu dibuat nanti di tugas 15 dan 16.
 - Jangan membuat komponen Livewire lain untuk baris atau pencarian. Cukup satu komponen.
