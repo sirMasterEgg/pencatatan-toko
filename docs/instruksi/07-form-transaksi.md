@@ -242,7 +242,7 @@ Untuk kolom Jumlah, Harga satuan, dan Diskon pakai `wire:model.live.blur` agar s
 
 Harga satuan dan diskon memakai `step="1"` dan `inputmode="numeric"`.
 
-Catatan: tugas 12 (`12-jumlah-desimal.md`) mengganti kolom Jumlah menjadi `type="text"` agar koma diterima. Tugas 13 (`13-titik-ribuan-harga.md`) mengganti kolom harga, harga modal, dan diskon menjadi `type="text"` dengan `data-rupiah`.
+Catatan: tugas 12 (`12-jumlah-desimal.md`) mengganti kolom Jumlah menjadi `type="text"` agar koma diterima. Tugas 13 (`13-titik-ribuan-harga.md`) mengganti kolom harga, harga modal, dan diskon menjadi `type="text"` dengan `data-rupiah`. Tugas 21 (`21-jumlah-kosong-saat-fokus.md`) menambah `data-clear-default` pada kolom Jumlah dan Diskon.
 
 Di bagian bawah setiap kartu:
 
@@ -297,7 +297,7 @@ Semua tombol selain tombol simpan wajib `type="button"`, agar tidak ikut mengiri
 
 - Jangan memakai komponen satu file (awalan emoji petir) atau multi-file.
 - Jangan memakai `Route::livewire()`.
-- Jangan menulis JavaScript sendiri. Jangan memasang Alpine. (Pengecualian yang diizinkan hanya `resources/js/rupiah.js` dari tugas 13 dan `resources/js/check-all.js` dari tugas 19.)
+- Jangan menulis JavaScript sendiri. Jangan memasang Alpine. (Pengecualian yang diizinkan hanya `resources/js/rupiah.js` dari tugas 13, `resources/js/check-all.js` dari tugas 19, dan `resources/js/clear-default.js` dari tugas 21.)
 - Jangan menyalin rumus subtotal atau aturan harga ke dalam komponen.
 - Jangan membuat fitur simpan sebagai draf. Fitur itu dibuat nanti di tugas 15 dan 16.
 - Jangan membuat komponen Livewire lain untuk baris atau pencarian. Cukup satu komponen.
