@@ -101,6 +101,7 @@ Dengan begitu aturan unik memeriksa nomor yang sudah dinormalkan. Pesan galat un
 
 - Tombol "Ubah".
 - Tombol "Hapus" di dalam form `DELETE` dengan konfirmasi `onsubmit="return confirm('Hapus pelanggan ini?')"`.
+- Catatan: tugas 17 (`17-harga-pelanggan.md`) menambah kartu "Harga khusus" dan tabel "Riwayat harga khusus" di halaman ini.
 
 ## Tes yang wajib ada
 

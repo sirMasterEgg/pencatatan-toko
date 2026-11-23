@@ -93,6 +93,9 @@
                                 <div>
                                     <div class="fw-semibold">{{ $row['name'] }} <small class="text-muted">({{ $row['unit'] }})</small></div>
                                     <small class="text-muted">Harga daftar: {{ $row['list_price'] !== null ? \App\Support\Format::rupiah($row['list_price']) : '-' }}</small>
+                                    @if ($row['customer_price'] !== null)
+                                        <small class="text-muted d-block">Harga pelanggan: {{ \App\Support\Format::rupiah($row['customer_price']) }}</small>
+                                    @endif
                                 </div>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" wire:click="resetRow({{ $i }})">Ganti barang</button>
                             </div>
@@ -159,7 +162,9 @@
                             </div>
                         </div>
 
-                        @if ($row['mode'] === 'existing' && $row['list_price'] !== null && is_int(\App\Support\Parse::rupiah($row['unit_price'])) && \App\Support\Parse::rupiah($row['unit_price']) !== (int) $row['list_price'])
+                        @php($typedPrice = \App\Support\Parse::rupiah($row['unit_price']))
+                        @php($referencePrice = $row['customer_price'] ?? $row['list_price'])
+                        @if ($row['mode'] === 'existing' && $row['list_price'] !== null && is_int($typedPrice) && $typedPrice !== (int) $referencePrice)
                             <div class="mb-2">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" id="pm-this-{{ $i }}" value="this_only" wire:model="items.{{ $i }}.price_mode">
@@ -169,6 +174,13 @@
                                     <input class="form-check-input" type="radio" id="pm-new-{{ $i }}" value="new_price" wire:model="items.{{ $i }}.price_mode">
                                     <label class="form-check-label" for="pm-new-{{ $i }}">Jadikan harga baru</label>
                                 </div>
+                                @if ($customerMode !== 'none')
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" id="pm-customer-{{ $i }}" value="customer_price" wire:model="items.{{ $i }}.price_mode">
+                                        <label class="form-check-label" for="pm-customer-{{ $i }}">Jadikan harga pelanggan</label>
+                                    </div>
+                                @endif
+                                @error("items.$i.price_mode") <div class="text-danger small">{{ $message }}</div> @enderror
                             </div>
                         @endif
 

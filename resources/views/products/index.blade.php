@@ -5,7 +5,10 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h4 mb-0">Barang</h1>
-        <a href="{{ route('products.create') }}" class="btn btn-primary btn-sm">Tambah barang</a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('products.bulk-price.create') }}" class="btn btn-outline-primary btn-sm">Ubah harga massal</a>
+            <a href="{{ route('products.create') }}" class="btn btn-primary btn-sm">Tambah barang</a>
+        </div>
     </div>
 
     <form method="GET" action="{{ route('products.index') }}" class="row g-2 mb-3">

@@ -4,7 +4,7 @@ Aplikasi pencatatan penjualan untuk satu toko kecil, dipakai pemilik lewat HP. P
 
 ## Cara kerja di proyek ini
 
-- Pekerjaan dibagi menjadi file tugas di `docs/instruksi/`, bernomor `01` sampai `16`. Kerjakan satu file tugas dalam satu waktu, sesuai urutan.
+- Pekerjaan dibagi menjadi file tugas di `docs/instruksi/`, bernomor `01` sampai `19`. Kerjakan satu file tugas dalam satu waktu, sesuai urutan.
 - Sebelum mengerjakan tugas, baca `docs/instruksi/00-aturan-umum.md`. File itu memuat kamus istilah lengkap dan daftar semua rute.
 - Kerjakan persis yang tertulis di file tugas. Jangan menambah fitur, paket, tabel, atau kolom.
 - Jika instruksi tidak bisa dijalankan atau saling bertentangan, berhenti dan laporkan. Jangan mengarang jalan keluar.
@@ -70,11 +70,11 @@ Livewire 4:
 ## Aturan bisnis yang tidak boleh dilanggar
 
 1. Setiap item transaksi terhubung ke satu barang. Tidak ada item teks bebas.
-2. Harga adalah riwayat. Perubahan harga menambah baris di `product_prices`. Baris lama tidak pernah diubah atau dihapus.
+2. Harga adalah riwayat. Perubahan harga menambah baris di `product_prices` atau `customer_prices`. Baris lama tidak pernah diubah atau dihapus.
 3. Harga yang berlaku adalah baris dengan `effective_from` terbaru yang tidak melewati waktu sekarang (`Product::currentPrice`).
 4. Item transaksi menyimpan salinan `unit_price`, `list_price`, dan `unit`.
 5. Barang dari form transaksi berstatus `needs_review`. Barang dari halaman barang berstatus `active`.
-6. Harga yang diubah di form transaksi bawaannya hanya untuk nota itu. Riwayat harga bertambah hanya jika pengguna memilih "Jadikan harga baru".
+6. Harga yang diubah di form transaksi bawaannya hanya untuk nota itu. Riwayat harga bertambah hanya jika pengguna memilih "Jadikan harga baru" atau "Jadikan harga pelanggan".
 7. Simpan transaksi bersifat utuh, di dalam satu `DB::transaction`.
 8. Isi transaksi hanya bisa diubah jika `Transaction::isEditable()`: `draft`, atau `confirmed` dengan status bayar `unpaid`. Setelah `partial` atau `paid`, terkunci. `cancelled` tidak pernah bisa diubah.
 9. Laporan hanya menghitung transaksi `confirmed`.
@@ -82,6 +82,8 @@ Livewire 4:
 11. Nomor HP pelanggan unik setelah dinormalkan.
 12. Jumlah desimal (maks 3 angka) hanya untuk satuan di `config('shop.decimal_units')`. Satuan lain bilangan bulat.
 13. Hanya draf yang boleh dihapus. Draf tidak masuk laporan.
+14. Urutan harga di nota: harga khusus per nota, lalu harga pelanggan, lalu harga umum. `list_price` = salinan harga umum, `customer_price` = salinan harga pelanggan.
+15. Ubah harga massal tidak berlaku mundur dan ditolak seluruhnya jika ada harga di bawah Rp0.
 
 ## Batas tanggung jawab kelas
 
@@ -90,6 +92,8 @@ Livewire 4:
 | `App\Services\TransactionService` | membuat (`confirmed` atau `draft`), mengubah, dan menghapus draf `Transaction` dan `TransactionItem`, membatalkan, mengubah status bayar, rumus subtotal |
 | `App\Services\ProductService` | membuat `Product` dan `ProductPrice`, merapikan nama barang (`normalizeName`) |
 | `App\Services\CustomerService` | mencari atau membuat `Customer` dari form transaksi |
+| `App\Services\CustomerPriceService` | membaca dan membuat `CustomerPrice` (harga pelanggan) |
+| `App\Services\BulkPriceService` | menghitung dan menyimpan ubah harga massal, lewat `ProductService` dan `CustomerPriceService` |
 | `App\Support\Format` | `number_format` |
 | `App\Support\Parse` | mengubah isian form (jumlah, uang) menjadi angka |
 | `App\Models\Transaction::isEditable()` | aturan kapan transaksi boleh diubah |
@@ -101,8 +105,8 @@ Livewire 4:
 app/Enums/            ProductStatus, TransactionStatus, PaymentStatus, Channel
 app/Http/Controllers/ satu controller per bagian
 app/Livewire/         TransactionForm
-app/Models/           Product, ProductPrice, Customer, Transaction, TransactionItem, User
-app/Services/         ProductService, CustomerService, TransactionService, DailyReportService
+app/Models/           Product, ProductPrice, Customer, CustomerPrice, Transaction, TransactionItem, User
+app/Services/         ProductService, CustomerService, CustomerPriceService, TransactionService, BulkPriceService, DailyReportService
 app/Support/          Format, Parse, Phone
 config/shop.php       daftar satuan, satuan desimal, dan data akun pemilik
 resources/views/      layouts, auth, products, customers, transactions, reports, livewire
@@ -122,6 +126,7 @@ docs/instruksi/       file tugas
 | Item transaksi | `TransactionItem` / `transaction_items` |
 | Harga saat itu | `unit_price` |
 | Harga daftar | `list_price` |
+| Harga pelanggan | `CustomerPrice` / `customer_prices`, salinan di item: `customer_price` |
 | Perlu dirapikan | `needs_review` |
 | Draf | `draft` |
 

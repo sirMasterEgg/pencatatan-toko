@@ -25,12 +25,15 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 | `14-nama-barang-huruf-besar.md` | Nama barang selalu huruf besar, termasuk data lama | Model AI |
 | `15-draf-dan-ubah-transaksi.md` | Draf dan ubah transaksi: aturan, layanan, rute, halaman | Model AI |
 | `16-form-draf-dan-ubah.md` | Draf dan ubah transaksi: form Livewire | Model AI |
+| `17-harga-pelanggan.md` | Harga pelanggan: tabel, layanan, halaman pelanggan | Model AI |
+| `18-harga-pelanggan-di-transaksi.md` | Harga pelanggan di form dan detail transaksi | Model AI |
+| `19-ubah-harga-massal.md` | Ubah harga banyak barang sekaligus dengan pratinjau | Model AI |
 
 ## Cara pakai
 
 1. Salin folder ini ke dalam proyek, misalnya ke `docs/instruksi/`.
 2. Pindahkan `CLAUDE.md` ke akar proyek jika Anda memakai Claude Code. File itu ringkasan `00-aturan-umum.md` dan mengandaikan file tugas berada di `docs/instruksi/`. Untuk alat lain yang membaca file aturan otomatis, salin isinya ke file yang sesuai, misalnya `AGENTS.md`.
-3. Kerjakan tugas berurutan dari 01 sampai 16. Satu tugas satu sesi percakapan baru. Tugas 01 sampai 10 membangun tahap 1. Tugas 11 dan seterusnya adalah perbaikan setelah tahap 1 selesai.
+3. Kerjakan tugas berurutan dari 01 sampai 19. Satu tugas satu sesi percakapan baru. Tugas 01 sampai 10 membangun tahap 1. Tugas 11 dan seterusnya adalah perbaikan setelah tahap 1 selesai.
 4. Di awal setiap sesi, berikan perintah seperti ini:
 
    ```
@@ -51,6 +54,7 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 - Tugas 06 dan 07 paling sulit. Pertimbangkan memakai model yang lebih kuat khusus untuk dua tugas ini.
 - Dari tugas 12 sampai 16, yang paling berisiko adalah 15 dan 16, karena mengubah aturan bisnis inti. Kode dan tesnya sudah ditulis lengkap di file tugas, tetapi tetap periksa laporannya dengan teliti.
 - Tugas 15 dan 16 saling bergantung. Setelah tugas 15 dan sebelum tugas 16 selesai, halaman "Ubah transaksi" masih menampilkan form kosong. Jangan dipakai untuk data sungguhan di antara keduanya.
+- Tugas 17 dan 18 juga berpasangan. Setelah tugas 17, harga pelanggan sudah bisa diatur, tetapi form transaksi baru memakainya setelah tugas 18. Tugas 18 paling berisiko di rangkaian ini, karena mengubah form transaksi dan `TransactionService`.
 
 ## Keputusan yang sudah diambil
 
@@ -71,6 +75,8 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 | Nama barang | Disimpan huruf besar. Data lama diubah sekali lewat migrasi (tugas 14) |
 | Draf | Bisa diubah kapan saja, tidak masuk laporan, bisa dihapus permanen. Barang baru dari draf yang dihapus tetap ada (tugas 15) |
 | Ubah transaksi | Boleh selama status bayar "Belum bayar". "Sebagian" dan "Lunas" mengunci. Mengembalikan status ke "Belum bayar" membuka kunci lagi (tugas 15) |
+| Harga pelanggan | Angka tetap per pelanggan per barang, disimpan sebagai riwayat. Diatur di halaman pelanggan atau lewat "Jadikan harga pelanggan" di form transaksi. Urutan: harga khusus nota, harga pelanggan, harga umum (tugas 17 dan 18) |
+| Ubah harga massal | Naik atau turun dalam rupiah, harga modal opsional, bisa dijadwalkan, ada pratinjau. Harga pelanggan ikut berubah jika dicentang (bawaan tercentang) (tugas 19) |
 
 ## Yang sengaja belum dibuat
 

@@ -66,6 +66,7 @@ Perilaku:
 `addPrice`
 
 - Buat baris `product_prices` dengan `effective_from` bernilai `now()`.
+- Catatan: tugas 19 (`19-ubah-harga-massal.md`) menambah parameter terakhir `?CarbonInterface $effectiveFrom = null`. Bawaannya tetap `now()`.
 - Jangan mengubah baris harga lama.
 
 ### 2. Rute
@@ -138,7 +139,7 @@ Tidak ada rute untuk mengubah atau menghapus harga.
 
 `index`
 
-- Judul "Barang" dan tombol "Tambah barang".
+- Judul "Barang" dan tombol "Tambah barang". (Tugas 19 menambah tombol "Ubah harga massal" di sebelahnya.)
 - Form pencarian: kolom teks `q` dan `select` status dengan pilihan "Semua", "Aktif", "Perlu dirapikan", "Nonaktif".
 - Daftar memakai `list-group`. Tiap baris menampilkan nama, satuan, harga jual saat ini dengan `Format::rupiah`, dan `badge` status. Seluruh baris adalah tautan ke `products.show`.
 - Barang tanpa harga menampilkan `-`.

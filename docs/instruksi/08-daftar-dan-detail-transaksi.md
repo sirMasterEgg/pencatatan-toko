@@ -98,6 +98,7 @@ Daftar item. Tiap item menampilkan:
 - Nama barang sebagai tautan ke `products.show`.
 - `{jumlah} {satuan} × {harga satuan}`, dengan `Format::quantity` dan `Format::rupiah`.
 - Jika `list_price` tidak `null` dan berbeda dari `unit_price`: teks kecil `Harga daftar: Rp...`.
+- Catatan: sejak tugas 18, item yang punya `customer_price` menampilkan `Harga pelanggan: Rp... · Harga umum: Rp...` sebagai gantinya.
 - Jika `list_price` `null`: `badge` kecil `Barang baru`.
 - Diskon, jika lebih dari 0.
 - Subtotal di kanan.

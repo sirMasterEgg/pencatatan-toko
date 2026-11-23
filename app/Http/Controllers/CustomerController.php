@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\TransactionStatus;
 use App\Models\Customer;
+use App\Models\Product;
+use App\Services\CustomerPriceService;
 use App\Support\Phone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,15 +51,20 @@ class CustomerController extends Controller
         return redirect()->route($route)->with('success', 'Pelanggan berhasil ditambahkan.');
     }
 
-    public function show(Customer $customer): View
+    public function show(Customer $customer, CustomerPriceService $prices): View
     {
         $confirmed = $customer->transactions()->where('status', TransactionStatus::Confirmed);
+        $specialPrices = $prices->activeForCustomer($customer->id);
 
         return view('customers.show', [
             'customer' => $customer,
             'transactionCount' => (clone $confirmed)->count(),
             'totalSpent' => (int) (clone $confirmed)->sum('total'),
             'transactions' => $customer->transactions()->latest('transacted_at')->latest('id')->limit(20)->get(),
+            'specialPrices' => $specialPrices,
+            'specialProducts' => Product::with('currentPrice')->whereKey(array_keys($specialPrices))->orderBy('name')->get(),
+            'selectableProducts' => Product::selectable()->with('currentPrice')->orderBy('name')->get(),
+            'priceHistory' => $customer->prices()->with('product')->latest('effective_from')->latest('id')->limit(20)->get(),
         ]);
     }
 
