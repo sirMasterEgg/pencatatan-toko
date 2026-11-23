@@ -28,12 +28,13 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 | `17-harga-pelanggan.md` | Harga pelanggan: tabel, layanan, halaman pelanggan | Model AI |
 | `18-harga-pelanggan-di-transaksi.md` | Harga pelanggan di form dan detail transaksi | Model AI |
 | `19-ubah-harga-massal.md` | Ubah harga banyak barang sekaligus dengan pratinjau | Model AI |
+| `20-simpan-dan-transaksi-baru.md` | Tombol "Simpan & transaksi baru" di form transaksi | Model AI |
 
 ## Cara pakai
 
 1. Salin folder ini ke dalam proyek, misalnya ke `docs/instruksi/`.
 2. Pindahkan `CLAUDE.md` ke akar proyek jika Anda memakai Claude Code. File itu ringkasan `00-aturan-umum.md` dan mengandaikan file tugas berada di `docs/instruksi/`. Untuk alat lain yang membaca file aturan otomatis, salin isinya ke file yang sesuai, misalnya `AGENTS.md`.
-3. Kerjakan tugas berurutan dari 01 sampai 19. Satu tugas satu sesi percakapan baru. Tugas 01 sampai 10 membangun tahap 1. Tugas 11 dan seterusnya adalah perbaikan setelah tahap 1 selesai.
+3. Kerjakan tugas berurutan dari 01 sampai 20. Satu tugas satu sesi percakapan baru. Tugas 01 sampai 10 membangun tahap 1. Tugas 11 dan seterusnya adalah perbaikan setelah tahap 1 selesai.
 4. Di awal setiap sesi, berikan perintah seperti ini:
 
    ```
@@ -76,6 +77,7 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 | Draf | Bisa diubah kapan saja, tidak masuk laporan, bisa dihapus permanen. Barang baru dari draf yang dihapus tetap ada (tugas 15) |
 | Ubah transaksi | Boleh selama status bayar "Belum bayar". "Sebagian" dan "Lunas" mengunci. Mengembalikan status ke "Belum bayar" membuka kunci lagi (tugas 15) |
 | Harga pelanggan | Angka tetap per pelanggan per barang, disimpan sebagai riwayat. Diatur di halaman pelanggan atau lewat "Jadikan harga pelanggan" di form transaksi. Urutan: harga khusus nota, harga pelanggan, harga umum (tugas 17 dan 18) |
+| Simpan & transaksi baru | Tombol ketiga di form transaksi baru dan saat mengubah draf. Menyimpan sebagai transaksi, lalu membuka form kosong (tanggal sekarang) dengan tautan ke transaksi tadi. Tidak tampil saat mengubah transaksi yang sudah dikonfirmasi (tugas 20) |
 | Ubah harga massal | Naik atau turun dalam rupiah, harga modal opsional, bisa dijadwalkan, ada pratinjau. Harga pelanggan ikut berubah jika dicentang (bawaan tercentang) (tugas 19) |
 
 ## Yang sengaja belum dibuat

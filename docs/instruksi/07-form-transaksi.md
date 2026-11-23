@@ -166,7 +166,7 @@ Jumlah `rowSubtotal` semua baris.
 4. Jangan menangkap `ValidationException`. Livewire menampilkannya sendiri.
 5. Jika berhasil: `session()->flash('success', 'Transaksi '.$transaction->number.' berhasil disimpan.')`, lalu `return $this->redirect(url('/transactions/'.$transaction->id));`
 
-Catatan: tugas 16 (`16-form-draf-dan-ubah.md`) memindahkan isi `save` ke method privat `persist`, menambah `saveDraft`, dan membuat `mount` bisa menerima transaksi untuk diubah.
+Catatan: tugas 16 (`16-form-draf-dan-ubah.md`) memindahkan isi `save` ke method privat `persist`, menambah `saveDraft`, dan membuat `mount` bisa menerima transaksi untuk diubah. Tugas 20 (`20-simpan-dan-transaksi-baru.md`) menambah `saveAndNew`, yang kembali ke `/transactions/create` setelah menyimpan.
 
 Pemetaan galat dari service ke form. Service memakai kunci seperti `items.0.new_product.name`, sedangkan form memakai `items.0.name`. Di view, tampilkan galat dengan memeriksa beberapa kunci:
 
@@ -262,7 +262,7 @@ Satu `div` dengan kelas `sticky-actions bg-white border-top p-3`:
 - Kiri: teks `Total` dan `Format::rupiah($this->total())` dengan huruf tebal.
 - Kanan: tombol `type="submit"` bertulisan `Simpan transaksi`, kelas `btn btn-primary`, dengan `wire:loading.attr="disabled"`.
 
-Catatan: tugas 16 mengubah bilah bawah ini menjadi dua baris dan menambah tombol "Simpan draf".
+Catatan: tugas 16 mengubah bilah bawah ini menjadi dua baris dan menambah tombol "Simpan draf". Tugas 20 menambah baris ketiga dengan tombol "Simpan & transaksi baru".
 
 Semua tombol selain tombol simpan wajib `type="button"`, agar tidak ikut mengirim form.
 

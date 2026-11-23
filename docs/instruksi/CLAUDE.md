@@ -4,7 +4,7 @@ Aplikasi pencatatan penjualan untuk satu toko kecil, dipakai pemilik lewat HP. P
 
 ## Cara kerja di proyek ini
 
-- Pekerjaan dibagi menjadi file tugas di `docs/instruksi/`, bernomor `01` sampai `19`. Kerjakan satu file tugas dalam satu waktu, sesuai urutan.
+- Pekerjaan dibagi menjadi file tugas di `docs/instruksi/`, bernomor `01` sampai `20`. Kerjakan satu file tugas dalam satu waktu, sesuai urutan.
 - Sebelum mengerjakan tugas, baca `docs/instruksi/00-aturan-umum.md`. File itu memuat kamus istilah lengkap dan daftar semua rute.
 - Kerjakan persis yang tertulis di file tugas. Jangan menambah fitur, paket, tabel, atau kolom.
 - Jika instruksi tidak bisa dijalankan atau saling bertentangan, berhenti dan laporkan. Jangan mengarang jalan keluar.

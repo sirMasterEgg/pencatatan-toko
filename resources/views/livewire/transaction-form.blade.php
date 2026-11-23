@@ -216,6 +216,9 @@
                     <button type="submit" class="btn btn-primary flex-fill" wire:loading.attr="disabled">Simpan transaksi</button>
                 @endif
             </div>
+            @if ($originalStatus !== 'confirmed')
+                <button type="button" class="btn btn-outline-primary w-100 mt-2" wire:click="saveAndNew" wire:loading.attr="disabled">Simpan &amp; transaksi baru</button>
+            @endif
         </div>
     </form>
 </div>
