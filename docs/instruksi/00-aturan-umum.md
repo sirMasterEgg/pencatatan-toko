@@ -222,7 +222,8 @@ config/shop.php     daftar satuan, satuan desimal, dan data akun pemilik
 resources/views/
   layouts/app.blade.php
   auth/ products/ customers/ transactions/ reports/ livewire/
-resources/js/       app.js, rupiah.js (titik ribuan, sejak tugas 13), check-all.js ("Pilih semua", sejak tugas 19)
+resources/js/       app.js, rupiah.js (titik ribuan, sejak tugas 13), check-all.js ("Pilih semua", sejak tugas 19),
+                    clear-default.js (Jumlah dan Diskon kosong saat difokus pertama kali, sejak tugas 21)
 tests/Feature/      satu file tes per bagian
 tests/Unit/         tes untuk Format dan Phone
 tests/e2e/          tes Playwright
