@@ -2,7 +2,7 @@
 
 Aplikasi pencatatan penjualan untuk satu toko kecil, dipakai pemilik lewat HP. Prinsipnya transaction-first: pemilik langsung mencatat transaksi, dan barang serta harga yang belum ada dibuat di layar transaksi yang sama.
 
-Status: **tahap 1 selesai** (Tugas 01 sampai 16 di `docs/instruksi/`).
+Status: **tahap 1 selesai** (Tugas 01 sampai 19 di `docs/instruksi/`).
 
 ## Tech stack
 
@@ -71,6 +71,8 @@ Tes e2e berjalan dengan satu worker dan emulasi layar HP, karena semua tes berba
 - **Titik ribuan**: kolom harga, harga modal, dan diskon langsung diberi titik saat diketik (`15000` menjadi `15.000`)
 - **Nama barang huruf besar**: nama barang selalu disimpan dalam huruf besar
 - **Draf dan ubah transaksi**: transaksi bisa disimpan sebagai draf (tidak masuk laporan, bisa dihapus). Transaksi yang belum dibayar bisa diubah. Setelah dibayar sebagian atau lunas, isinya terkunci
+- **Harga pelanggan**: harga tetap per pelanggan per barang, diatur di halaman pelanggan atau dari form transaksi ("Jadikan harga pelanggan"). Urutan harga di nota: harga khusus nota, lalu harga pelanggan, lalu harga umum
+- **Ubah harga massal**: pilih banyak barang, naikkan atau turunkan harganya sekian rupiah, lihat pratinjau, lalu simpan. Bisa dijadwalkan dan bisa ikut mengubah harga pelanggan
 - **Transaksi baru**: form Livewire untuk mencari barang, membuat barang baru beserta harganya, memilih atau membuat pelanggan, lalu menyimpan semuanya sekaligus dalam satu transaksi database. Barang dari form berstatus "Perlu dirapikan"
 - **Daftar dan detail transaksi**: filter tanggal, status, status bayar, dan pencarian. Transaksi bisa dibatalkan dan status bayarnya bisa diubah. Isi transaksi yang sudah disimpan tidak bisa diubah
 - **Beranda dan laporan harian**: omzet, jumlah transaksi, rata-rata nota, piutang, rekap per saluran, dan barang terlaris. Hanya transaksi yang dikonfirmasi yang dihitung
@@ -113,8 +115,8 @@ Semua rute selain `/login` wajib login.
 |---|---|
 | Login | `GET/POST /login`, `POST /logout` |
 | Beranda | `GET /` |
-| Barang | `/products` (daftar, tambah, detail, ubah), `POST /products/{id}/prices`, `POST /products/{id}/mark-reviewed` |
-| Pelanggan | `/customers` (resource lengkap) |
+| Barang | `/products` (daftar, tambah, detail, ubah), `POST /products/{id}/prices`, `POST /products/{id}/mark-reviewed`, `GET /products/bulk-price`, `POST /products/bulk-price/preview`, `POST /products/bulk-price` |
+| Pelanggan | `/customers` (resource lengkap), `POST /customers/{id}/prices`, `POST /customers/{id}/prices/{product}/stop` |
 | Transaksi | `GET /transactions`, `GET /transactions/create`, `GET /transactions/{id}`, `GET /transactions/{id}/edit`, `DELETE /transactions/{id}` (hanya draf), `POST /transactions/{id}/cancel`, `POST /transactions/{id}/payment-status` |
 | Laporan | `GET /reports/daily` |
 

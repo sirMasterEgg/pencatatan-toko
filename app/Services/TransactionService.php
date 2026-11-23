@@ -20,6 +20,7 @@ class TransactionService
     public function __construct(
         private ProductService $products,
         private CustomerService $customers,
+        private CustomerPriceService $customerPrices,
     ) {}
 
     public static function calculateSubtotal(float|int|string $quantity, int $unitPrice, int $discount = 0): int
@@ -120,14 +121,16 @@ class TransactionService
             if (! empty($item['product_id'])) {
                 $product = Product::with('currentPrice')->findOrFail($item['product_id']);
                 $this->assertSelectable($product, $index);
-                $listPrice = $this->applyExistingProduct($product, $unitPrice, $priceMode, $transaction);
+                $customerPrice = $this->customerPriceFor($transaction, $product);
+                $listPrice = $this->applyExistingProduct($product, $unitPrice, $priceMode, $transaction, $customerPrice);
             } else {
                 $new = $item['new_product'];
                 $product = $this->products->findByNameAndUnit($new['name'], $new['unit']);
 
                 if ($product) {
                     $product->load('currentPrice');
-                    $listPrice = $this->applyExistingProduct($product, $unitPrice, 'this_only', $transaction);
+                    $customerPrice = $this->customerPriceFor($transaction, $product);
+                    $listPrice = $this->applyExistingProduct($product, $unitPrice, 'this_only', $transaction, $customerPrice);
                 } else {
                     $product = $this->products->create(
                         name: $new['name'],
@@ -138,6 +141,7 @@ class TransactionService
                         sourceTransactionId: $transaction->id,
                     );
                     $listPrice = null;
+                    $customerPrice = null;
                 }
             }
 
@@ -153,6 +157,7 @@ class TransactionService
                 'unit' => $product->unit,
                 'unit_price' => $unitPrice,
                 'list_price' => $listPrice,
+                'customer_price' => $customerPrice,
                 'discount' => $discount,
                 'subtotal' => $subtotal,
             ]);
@@ -199,18 +204,32 @@ class TransactionService
     /**
      * Returns the list price in effect just before this transaction (null if none).
      */
-    private function applyExistingProduct(Product $product, int $unitPrice, string $priceMode, Transaction $transaction): ?int
+    private function applyExistingProduct(Product $product, int $unitPrice, string $priceMode, Transaction $transaction, ?int $customerPrice = null): ?int
     {
         $current = $product->currentPrice;
         $listPrice = $current?->sell_price;
 
         if ($listPrice === null) {
             $this->products->addPrice($product, $unitPrice, null, null, $transaction->id);
-        } elseif ($unitPrice !== $listPrice && $priceMode === 'new_price') {
+        } elseif ($priceMode === 'new_price' && $unitPrice !== $listPrice) {
             $this->products->addPrice($product, $unitPrice, $current->cost_price, null, $transaction->id);
+        } elseif ($priceMode === 'customer_price' && $transaction->customer_id !== null && $unitPrice !== $customerPrice) {
+            $this->customerPrices->set($transaction->customer_id, $product->id, $unitPrice, null, $transaction->id);
         }
 
         return $listPrice;
+    }
+
+    /**
+     * Harga pelanggan yang berlaku untuk barang ini sebelum transaksi disimpan, atau null.
+     */
+    private function customerPriceFor(Transaction $transaction, Product $product): ?int
+    {
+        if ($transaction->customer_id === null) {
+            return null;
+        }
+
+        return $this->customerPrices->priceAt($transaction->customer_id, $product->id);
     }
 
     private function assertSelectable(Product $product, int|string $index): void
@@ -283,7 +302,7 @@ class TransactionService
             'items.*.quantity' => ['required', 'numeric', 'gt:0', 'decimal:0,3'],
             'items.*.unit_price' => ['required', 'integer', 'min:0'],
             'items.*.discount' => ['nullable', 'integer', 'min:0'],
-            'items.*.price_mode' => ['nullable', Rule::in(['this_only', 'new_price'])],
+            'items.*.price_mode' => ['nullable', Rule::in(['this_only', 'new_price', 'customer_price'])],
         ];
 
         $messages = [
@@ -315,6 +334,10 @@ class TransactionService
                 if ($product && ! in_array($product->status, [ProductStatus::Active, ProductStatus::NeedsReview], true)) {
                     $errors["items.{$index}.product_id"] = 'Barang ini sudah tidak aktif.';
                 }
+            }
+
+            if (($item['price_mode'] ?? null) === 'customer_price' && empty($data['customer'])) {
+                $errors["items.{$index}.price_mode"] = 'Pilih pelanggan dulu untuk menyimpan harga pelanggan.';
             }
 
             $quantity = (float) $item['quantity'];

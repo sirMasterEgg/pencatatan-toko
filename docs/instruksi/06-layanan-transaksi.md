@@ -103,7 +103,7 @@ Validasi dilakukan di dalam service dengan `Validator::make($data, $rules, $mess
 | `items.*.quantity` | wajib, numerik, `gt:0`. Sejak tugas 12: juga `decimal:0,3`, dan bilangan bulat untuk satuan di luar `config('shop.decimal_units')` |
 | `items.*.unit_price` | wajib, integer, minimal 0 |
 | `items.*.discount` | opsional, integer, minimal 0 |
-| `items.*.price_mode` | opsional, salah satu dari `this_only`, `new_price` |
+| `items.*.price_mode` | opsional, salah satu dari `this_only`, `new_price`. Sejak tugas 18 juga `customer_price` |
 
 Untuk `customer.name`, jangan memakai `required_without:customer.id`, karena aturan itu ikut gagal saat `customer` kosong. Pakai:
 
@@ -148,6 +148,7 @@ Semua langkah berikut dijalankan di dalam satu `DB::transaction(function () { ..
    - `list_price` = `currentPrice->sell_price`, atau `null` jika barang belum punya harga.
    - Jika `list_price` bernilai `null`: panggil `ProductService::addPrice` dengan `unit_price` sebagai harga jual dan id transaksi sebagai sumber.
    - Jika `list_price` tidak `null`, `unit_price` berbeda dari `list_price`, DAN `price_mode` bernilai `new_price`: panggil `ProductService::addPrice` dengan `unit_price` sebagai harga jual, harga modal disalin dari `currentPrice->cost_price`, dan id transaksi sebagai sumber.
+   - Catatan: tugas 18 (`18-harga-pelanggan-di-transaksi.md`) menambah mode `customer_price` dan kolom salinan `customer_price` di item.
    - Dalam kasus lain, jangan menyentuh `product_prices`.
 
    **b. Jika item tidak punya `product_id` (barang baru):**

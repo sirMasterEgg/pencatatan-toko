@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use App\Services\CustomerPriceService;
 use App\Services\TransactionService;
 use App\Support\Format;
 use App\Support\Parse;
@@ -83,6 +84,7 @@ class TransactionForm extends Component
                 'name' => $item->product->name,
                 'unit' => $item->product->unit,
                 'list_price' => $item->product->currentPrice?->sell_price,
+                'customer_price' => $this->customerPriceFor($item->product_id),
                 'quantity' => Format::quantityInput($item->quantity),
                 'unit_price' => Format::thousands($item->unit_price),
                 'discount' => Format::thousands($item->discount),
@@ -105,6 +107,7 @@ class TransactionForm extends Component
             'name' => '',
             'unit' => '',
             'list_price' => null,
+            'customer_price' => null,
             'cost_price' => null,
             'quantity' => '1',
             'unit_price' => null,
@@ -189,6 +192,7 @@ class TransactionForm extends Component
         }
 
         $price = $product->currentPrice?->sell_price;
+        $customerPrice = $this->customerPriceFor($product->id);
 
         $this->items[$index] = array_merge($this->items[$index], [
             'mode' => 'existing',
@@ -196,7 +200,8 @@ class TransactionForm extends Component
             'name' => $product->name,
             'unit' => $product->unit,
             'list_price' => $price,
-            'unit_price' => Format::thousands($price),
+            'customer_price' => $customerPrice,
+            'unit_price' => Format::thousands($customerPrice ?? $price),
             'price_mode' => 'this_only',
             'search' => '',
             'results' => [],
@@ -240,6 +245,7 @@ class TransactionForm extends Component
         $this->customerLabel = $customer->phone ? $customer->name.' ('.$customer->phone.')' : $customer->name;
         $this->customerSearch = '';
         $this->customerResults = [];
+        $this->refreshCustomerPrices();
     }
 
     public function startNewCustomer(): void
@@ -254,6 +260,7 @@ class TransactionForm extends Component
 
         $this->customerSearch = '';
         $this->customerResults = [];
+        $this->refreshCustomerPrices();
     }
 
     public function clearCustomer(): void
@@ -265,6 +272,45 @@ class TransactionForm extends Component
         $this->customerResults = [];
         $this->customerName = '';
         $this->customerPhone = '';
+        $this->refreshCustomerPrices();
+    }
+
+    /**
+     * Harga pelanggan yang berlaku untuk pelanggan terpilih, atau null.
+     */
+    private function customerPriceFor(int $productId): ?int
+    {
+        if ($this->customerMode !== 'existing' || $this->customerId === null) {
+            return null;
+        }
+
+        return app(CustomerPriceService::class)->priceAt($this->customerId, $productId);
+    }
+
+    /**
+     * Dipanggil setiap kali pelanggan berganti. Baris yang harganya belum diubah
+     * mengikuti harga acuan baru (harga pelanggan, atau harga umum).
+     */
+    private function refreshCustomerPrices(): void
+    {
+        foreach ($this->items as $index => $row) {
+            if ($row['mode'] !== 'existing' || $row['product_id'] === null) {
+                continue;
+            }
+
+            $oldReference = $row['customer_price'] ?? $row['list_price'];
+            $customerPrice = $this->customerPriceFor($row['product_id']);
+
+            if (Parse::rupiah($row['unit_price']) === $oldReference) {
+                $this->items[$index]['unit_price'] = Format::thousands($customerPrice ?? $row['list_price']);
+            }
+
+            $this->items[$index]['customer_price'] = $customerPrice;
+
+            if ($row['price_mode'] === 'customer_price' && $this->customerMode === 'none') {
+                $this->items[$index]['price_mode'] = 'this_only';
+            }
+        }
     }
 
     public function rowSubtotal(array $row): int

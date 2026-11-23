@@ -57,6 +57,8 @@
                         <div>{{ \App\Support\Format::quantity($item->quantity) }} {{ $item->unit }} × {{ \App\Support\Format::rupiah($item->unit_price) }}</div>
                         @if ($item->list_price === null)
                             <span class="badge text-bg-warning">Barang baru</span>
+                        @elseif ($item->customer_price !== null)
+                            <small class="text-muted">Harga pelanggan: {{ \App\Support\Format::rupiah($item->customer_price) }} · Harga umum: {{ \App\Support\Format::rupiah($item->list_price) }}</small>
                         @elseif ($item->list_price !== $item->unit_price)
                             <small class="text-muted">Harga daftar: {{ \App\Support\Format::rupiah($item->list_price) }}</small>
                         @endif
