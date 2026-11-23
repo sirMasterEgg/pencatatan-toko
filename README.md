@@ -2,7 +2,7 @@
 
 Aplikasi pencatatan penjualan untuk satu toko kecil, dipakai pemilik lewat HP. Prinsipnya transaction-first: pemilik langsung mencatat transaksi, dan barang serta harga yang belum ada dibuat di layar transaksi yang sama.
 
-Status: **tahap 1 selesai** (Tugas 01 sampai 19 di `docs/instruksi/`).
+Status: **tahap 1 selesai** (Tugas 01 sampai 20 di `docs/instruksi/`).
 
 ## Tech stack
 
@@ -73,6 +73,7 @@ Tes e2e berjalan dengan satu worker dan emulasi layar HP, karena semua tes berba
 - **Draf dan ubah transaksi**: transaksi bisa disimpan sebagai draf (tidak masuk laporan, bisa dihapus). Transaksi yang belum dibayar bisa diubah. Setelah dibayar sebagian atau lunas, isinya terkunci
 - **Harga pelanggan**: harga tetap per pelanggan per barang, diatur di halaman pelanggan atau dari form transaksi ("Jadikan harga pelanggan"). Urutan harga di nota: harga khusus nota, lalu harga pelanggan, lalu harga umum
 - **Ubah harga massal**: pilih banyak barang, naikkan atau turunkan harganya sekian rupiah, lihat pratinjau, lalu simpan. Bisa dijadwalkan dan bisa ikut mengubah harga pelanggan
+- **Simpan & transaksi baru**: menyimpan transaksi lalu langsung membuka form kosong untuk pembeli berikutnya, dengan tautan ke transaksi yang baru disimpan
 - **Transaksi baru**: form Livewire untuk mencari barang, membuat barang baru beserta harganya, memilih atau membuat pelanggan, lalu menyimpan semuanya sekaligus dalam satu transaksi database. Barang dari form berstatus "Perlu dirapikan"
 - **Daftar dan detail transaksi**: filter tanggal, status, status bayar, dan pencarian. Transaksi bisa dibatalkan dan status bayarnya bisa diubah. Isi transaksi yang sudah disimpan tidak bisa diubah
 - **Beranda dan laporan harian**: omzet, jumlah transaksi, rata-rata nota, piutang, rekap per saluran, dan barang terlaris. Hanya transaksi yang dikonfirmasi yang dihitung
