@@ -244,6 +244,7 @@ Aturan:
 - Tombol "Simpan draf" `type="button"` dengan `wire:click="saveDraft"`. Jangan `type="submit"`.
 - Tombol utama tetap `type="submit"`.
 - Total dipindah ke baris sendiri agar dua tombol muat di lebar 375px.
+- Catatan: tugas 20 (`20-simpan-dan-transaksi-baru.md`) menambah tombol ketiga "Simpan & transaksi baru" di bawah baris tombol ini.
 
 ### 6. README proyek
 
