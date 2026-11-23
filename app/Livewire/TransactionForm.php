@@ -343,7 +343,12 @@ class TransactionForm extends Component
         return $this->persist($service, TransactionStatus::Draft);
     }
 
-    private function persist(TransactionService $service, TransactionStatus $status)
+    public function saveAndNew(TransactionService $service)
+    {
+        return $this->persist($service, TransactionStatus::Confirmed, startNew: true);
+    }
+
+    private function persist(TransactionService $service, TransactionStatus $status, bool $startNew = false)
     {
         $this->resetErrorBag();
 
@@ -422,6 +427,12 @@ class TransactionForm extends Component
         };
 
         session()->flash('success', $message);
+
+        if ($startNew) {
+            session()->flash('last_transaction', ['id' => $transaction->id, 'number' => $transaction->number]);
+
+            return $this->redirect(route('transactions.create'));
+        }
 
         return $this->redirect(route('transactions.show', $transaction));
     }
