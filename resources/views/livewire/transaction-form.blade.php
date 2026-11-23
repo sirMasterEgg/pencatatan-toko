@@ -144,7 +144,7 @@
                             <div class="col-4">
                                 <label class="form-label" for="qty-{{ $i }}">Jumlah</label>
                                 <input type="text" id="qty-{{ $i }}" class="form-control @error("items.$i.quantity") is-invalid @enderror"
-                                       wire:model.live.blur="items.{{ $i }}.quantity" inputmode="{{ in_array($row['unit'], $decimalUnits, true) ? 'decimal' : 'numeric' }}" autocomplete="off">
+                                       wire:model.live.blur="items.{{ $i }}.quantity" inputmode="{{ in_array($row['unit'], $decimalUnits, true) ? 'decimal' : 'numeric' }}" autocomplete="off" data-clear-default="1">
                                 @error("items.$i.quantity") <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 <div class="form-text">{{ $row['unit'] }}</div>
                             </div>
@@ -157,7 +157,7 @@
                             <div class="col-4">
                                 <label class="form-label" for="disc-{{ $i }}">Diskon</label>
                                 <input type="text" id="disc-{{ $i }}" class="form-control @error("items.$i.discount") is-invalid @enderror"
-                                       wire:model.live.blur="items.{{ $i }}.discount" inputmode="numeric" autocomplete="off" data-rupiah>
+                                       wire:model.live.blur="items.{{ $i }}.discount" inputmode="numeric" autocomplete="off" data-rupiah data-clear-default="0">
                                 @error("items.$i.discount") <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
