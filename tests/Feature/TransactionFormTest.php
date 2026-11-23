@@ -325,4 +325,16 @@ class TransactionFormTest extends TestCase
 
         Livewire::test(TransactionForm::class)->set('transactionId', 1);
     }
+
+    public function test_quantity_and_discount_inputs_are_cleared_on_first_focus(): void
+    {
+        $product = Product::factory()->create(['name' => 'GULA', 'unit' => 'kg']);
+        ProductPrice::factory()->for($product)->create(['sell_price' => 18000]);
+
+        Livewire::test(TransactionForm::class)
+            ->call('selectProduct', 0, $product->id)
+            ->assertSet('items.0.quantity', '1')
+            ->assertSeeHtml('data-clear-default="1"')
+            ->assertSeeHtml('data-clear-default="0"');
+    }
 }
