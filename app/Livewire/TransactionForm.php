@@ -28,6 +28,12 @@ class TransactionForm extends Component
 
     public string $transactedAt = '';
 
+    /**
+     * true: tanggal mengikuti waktu sekarang dan disimpan dengan waktu saat simpan.
+     * false: tanggal diisi manual, atau tanggal asli transaksi yang sedang diubah.
+     */
+    public bool $autoTime = true;
+
     public string $channel = 'store';
 
     public string $paymentStatus = 'paid';
@@ -62,12 +68,37 @@ class TransactionForm extends Component
         $this->items = [$this->emptyRow()];
     }
 
+    /**
+     * Setiap permintaan Livewire, tanggal otomatis diperbarui ke waktu sekarang.
+     */
+    public function hydrate(): void
+    {
+        if ($this->autoTime) {
+            $this->transactedAt = now()->format('Y-m-d\TH:i');
+        }
+    }
+
+    /**
+     * Dipanggil Livewire saat pengguna mengubah kolom tanggal sendiri.
+     */
+    public function updatedTransactedAt(): void
+    {
+        $this->autoTime = false;
+    }
+
+    public function useCurrentTime(): void
+    {
+        $this->autoTime = true;
+        $this->transactedAt = now()->format('Y-m-d\TH:i');
+    }
+
     private function fillFromTransaction(Transaction $transaction): void
     {
         $transaction->load('items.product.currentPrice', 'customer');
 
         $this->transactionId = $transaction->id;
         $this->originalStatus = $transaction->status->value;
+        $this->autoTime = false;
         $this->transactedAt = $transaction->transacted_at->format('Y-m-d\TH:i');
         $this->channel = $transaction->channel->value;
         $this->paymentStatus = $transaction->payment_status->value;
@@ -417,7 +448,7 @@ class TransactionForm extends Component
         };
 
         $data = [
-            'transacted_at' => str_replace('T', ' ', $this->transactedAt),
+            'transacted_at' => $this->autoTime ? now()->format('Y-m-d H:i:s') : str_replace('T', ' ', $this->transactedAt),
             'channel' => $this->channel,
             'payment_status' => $this->paymentStatus,
             'note' => $this->note !== '' ? $this->note : null,

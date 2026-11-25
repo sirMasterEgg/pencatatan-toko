@@ -7,8 +7,13 @@
                 <h2 class="h6">Data transaksi</h2>
                 <div class="mb-2">
                     <label for="transactedAt" class="form-label">Tanggal</label>
-                    <input type="datetime-local" id="transactedAt" class="form-control @error('transacted_at') is-invalid @enderror" wire:model="transactedAt">
+                    <input type="datetime-local" id="transactedAt" class="form-control @error('transacted_at') is-invalid @enderror" wire:model.live="transactedAt" @if ($autoTime) data-live-clock @endif>
                     @error('transacted_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    @if ($autoTime)
+                        <div class="form-text">Mengikuti waktu sekarang. Ubah jika transaksi terjadi di waktu lain.</div>
+                    @else
+                        <button type="button" class="btn btn-link btn-sm px-0" wire:click="useCurrentTime">Pakai waktu sekarang</button>
+                    @endif
                 </div>
                 <div class="row g-2">
                     <div class="col-6">
