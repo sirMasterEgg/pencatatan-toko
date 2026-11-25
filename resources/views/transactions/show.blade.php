@@ -32,6 +32,12 @@
                 <dt class="col-5">Saluran</dt><dd class="col-7">{{ $transaction->channel->label() }}</dd>
                 <dt class="col-5">Status</dt><dd class="col-7">{{ $transaction->status->label() }}</dd>
                 <dt class="col-5">Status bayar</dt><dd class="col-7">@include('transactions._payment_badge', ['status' => $transaction->payment_status])</dd>
+                @if ($transaction->payment_status === \App\Enums\PaymentStatus::Partial)
+                    <dt class="col-5">Dibayar</dt><dd class="col-7">{{ \App\Support\Format::rupiah($transaction->paid_amount) }}</dd>
+                @endif
+                @if ($transaction->payment_status !== \App\Enums\PaymentStatus::Paid && ! $cancelled)
+                    <dt class="col-5">Kurang</dt><dd class="col-7 fw-semibold text-danger">{{ \App\Support\Format::rupiah($transaction->remainingAmount()) }}</dd>
+                @endif
                 <dt class="col-5">Pelanggan</dt>
                 <dd class="col-7">
                     @if ($transaction->customer)
@@ -94,9 +100,13 @@
                     <label for="payment_status" class="form-label">Status bayar</label>
                     <select id="payment_status" name="payment_status" class="form-select mb-2">
                         @foreach ($paymentStatuses as $status)
-                            <option value="{{ $status->value }}" @selected($transaction->payment_status === $status)>{{ $status->label() }}</option>
+                            <option value="{{ $status->value }}" @selected(old('payment_status', $transaction->payment_status->value) === $status->value)>{{ $status->label() }}</option>
                         @endforeach
                     </select>
+                    <label for="paid_amount" class="form-label">Nominal dibayar</label>
+                    <input type="text" id="paid_amount" name="paid_amount" value="{{ \App\Support\Format::thousands(old('paid_amount', $transaction->payment_status === \App\Enums\PaymentStatus::Partial ? $transaction->paid_amount : null)) }}" inputmode="numeric" autocomplete="off" data-rupiah class="form-control @error('paid_amount') is-invalid @enderror">
+                    @error('paid_amount')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div class="form-text mb-2">Wajib diisi jika status bayar Sebagian. Isi total yang sudah dibayar sampai sekarang.</div>
                     <button type="submit" class="btn btn-outline-primary w-100">Simpan status bayar</button>
                 </form>
 

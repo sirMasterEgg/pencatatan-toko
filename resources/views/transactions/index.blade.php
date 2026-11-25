@@ -64,6 +64,9 @@
                             <span class="badge text-bg-secondary">{{ $transaction->status->label() }}</span>
                         @endif
                         @include('transactions._payment_badge', ['status' => $transaction->payment_status])
+                        @if ($transaction->payment_status === \App\Enums\PaymentStatus::Partial && ! $cancelled)
+                            <span>Kurang {{ \App\Support\Format::rupiah($transaction->remainingAmount()) }}</span>
+                        @endif
                     </div>
                 </a>
             @endforeach

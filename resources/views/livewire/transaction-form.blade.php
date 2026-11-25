@@ -26,13 +26,21 @@
                     </div>
                     <div class="col-6">
                         <label for="paymentStatus" class="form-label">Status bayar</label>
-                        <select id="paymentStatus" class="form-select" wire:model="paymentStatus">
+                        <select id="paymentStatus" class="form-select" wire:model.live="paymentStatus">
                             @foreach ($paymentStatuses as $option)
                                 <option value="{{ $option->value }}">{{ $option->label() }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
+                @if ($paymentStatus === 'partial')
+                    <div class="mt-2">
+                        <label for="paidAmount" class="form-label">Nominal dibayar</label>
+                        <input type="text" id="paidAmount" class="form-control @error('paid_amount') is-invalid @enderror" wire:model.live.blur="paidAmount" inputmode="numeric" autocomplete="off" data-rupiah>
+                        @error('paid_amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <div class="form-text">Kurang: <strong>{{ \App\Support\Format::rupiah($this->remaining()) }}</strong></div>
+                    </div>
+                @endif
             </div>
         </div>
 

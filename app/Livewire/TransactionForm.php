@@ -38,6 +38,8 @@ class TransactionForm extends Component
 
     public string $paymentStatus = 'paid';
 
+    public string $paidAmount = '';
+
     public string $note = '';
 
     public string $customerMode = 'none';
@@ -102,6 +104,7 @@ class TransactionForm extends Component
         $this->transactedAt = $transaction->transacted_at->format('Y-m-d\TH:i');
         $this->channel = $transaction->channel->value;
         $this->paymentStatus = $transaction->payment_status->value;
+        $this->paidAmount = $transaction->payment_status === PaymentStatus::Partial ? Format::thousands($transaction->paid_amount) : '';
         $this->note = $transaction->note ?? '';
 
         if ($transaction->customer) {
@@ -370,6 +373,16 @@ class TransactionForm extends Component
         return TransactionService::calculateSubtotal($quantity, (int) $unitPrice, $discount);
     }
 
+    /**
+     * Sisa yang belum dibayar untuk status "Sebagian".
+     */
+    public function remaining(): int
+    {
+        $paid = Parse::rupiah($this->paidAmount);
+
+        return max(0, $this->total() - (is_int($paid) ? $paid : 0));
+    }
+
     public function total(): int
     {
         return array_sum(array_map(fn (array $row) => $this->rowSubtotal($row), $this->items));
@@ -451,6 +464,7 @@ class TransactionForm extends Component
             'transacted_at' => $this->autoTime ? now()->format('Y-m-d H:i:s') : str_replace('T', ' ', $this->transactedAt),
             'channel' => $this->channel,
             'payment_status' => $this->paymentStatus,
+            'paid_amount' => $this->paymentStatus === PaymentStatus::Partial->value ? Parse::rupiah($this->paidAmount) : null,
             'note' => $this->note !== '' ? $this->note : null,
             'customer' => $customer,
             'items' => $items,

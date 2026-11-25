@@ -49,7 +49,11 @@ class TransactionService
                 'note' => $data['note'] ?? null,
             ]);
 
-            $transaction->update(['total' => $this->createItems($transaction, $data['items'])]);
+            $total = $this->createItems($transaction, $data['items']);
+            $transaction->update([
+                'total' => $total,
+                'paid_amount' => $this->paidAmountFor($data['payment_status'], $total, $data['paid_amount'] ?? null),
+            ]);
 
             return $transaction->load('items.product', 'customer');
         });
@@ -88,7 +92,10 @@ class TransactionService
             $total = $this->createItems($transaction, $data['items']);
 
             $transaction->items()->whereIn('product_id', $newProductIds)->update(['list_price' => null]);
-            $transaction->update(['total' => $total]);
+            $transaction->update([
+                'total' => $total,
+                'paid_amount' => $this->paidAmountFor($data['payment_status'], $total, $data['paid_amount'] ?? null),
+            ]);
 
             return $transaction->load('items.product', 'customer');
         });
@@ -190,15 +197,45 @@ class TransactionService
         return $transaction;
     }
 
-    public function updatePaymentStatus(Transaction $transaction, PaymentStatus $status): Transaction
+    public function updatePaymentStatus(Transaction $transaction, PaymentStatus $status, ?int $paidAmount = null): Transaction
     {
         if ($transaction->status !== TransactionStatus::Confirmed) {
             throw ValidationException::withMessages(['payment_status' => 'Status bayar hanya bisa diubah pada transaksi yang dikonfirmasi.']);
         }
 
-        $transaction->update(['payment_status' => $status]);
+        $transaction->update([
+            'payment_status' => $status,
+            'paid_amount' => $this->paidAmountFor($status, $transaction->total, $paidAmount),
+        ]);
 
         return $transaction;
+    }
+
+    /**
+     * Nominal dibayar yang disimpan: Lunas = total, Belum bayar = 0,
+     * Sebagian = isian pemilik, wajib lebih dari 0 dan kurang dari total.
+     */
+    private function paidAmountFor(PaymentStatus|string $status, int $total, mixed $paidAmount): int
+    {
+        $status = $status instanceof PaymentStatus ? $status : PaymentStatus::from($status);
+
+        if ($status === PaymentStatus::Paid) {
+            return $total;
+        }
+
+        if ($status === PaymentStatus::Unpaid) {
+            return 0;
+        }
+
+        if (! is_int($paidAmount) || $paidAmount < 1) {
+            throw ValidationException::withMessages(['paid_amount' => 'Isi nominal yang sudah dibayar.']);
+        }
+
+        if ($paidAmount >= $total) {
+            throw ValidationException::withMessages(['paid_amount' => 'Nominal dibayar harus kurang dari total. Pilih "Lunas" jika sudah dibayar penuh.']);
+        }
+
+        return $paidAmount;
     }
 
     /**
@@ -269,6 +306,10 @@ class TransactionService
 
     private function normalize(array $data): array
     {
+        if (array_key_exists('paid_amount', $data)) {
+            $data['paid_amount'] = Parse::rupiah($data['paid_amount']);
+        }
+
         foreach ($data['items'] ?? [] as $index => $item) {
             if (is_array($item) && array_key_exists('quantity', $item)) {
                 $data['items'][$index]['quantity'] = Parse::quantity($item['quantity']);
@@ -284,6 +325,7 @@ class TransactionService
             'transacted_at' => ['required', 'date', 'before_or_equal:now'],
             'channel' => ['required', Rule::enum(Channel::class)],
             'payment_status' => ['required', Rule::enum(PaymentStatus::class)],
+            'paid_amount' => ['nullable', 'integer', 'min:0'],
             'note' => ['nullable', 'string', 'max:1000'],
             'customer' => ['nullable', 'array'],
             'customer.id' => ['nullable', 'integer', 'exists:customers,id'],
@@ -319,6 +361,7 @@ class TransactionService
             'items.*.new_product.name' => 'nama barang',
             'items.*.new_product.unit' => 'satuan',
             'customer.name' => 'nama pelanggan',
+            'paid_amount' => 'nominal dibayar',
         ];
 
         Validator::make($data, $rules, $messages, $attributes)->validate();
