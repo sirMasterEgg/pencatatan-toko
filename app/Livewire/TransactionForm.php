@@ -28,9 +28,17 @@ class TransactionForm extends Component
 
     public string $transactedAt = '';
 
+    /**
+     * true: tanggal mengikuti waktu sekarang dan disimpan dengan waktu saat simpan.
+     * false: tanggal diisi manual, atau tanggal asli transaksi yang sedang diubah.
+     */
+    public bool $autoTime = true;
+
     public string $channel = 'store';
 
     public string $paymentStatus = 'paid';
+
+    public string $paidAmount = '';
 
     public string $note = '';
 
@@ -62,15 +70,41 @@ class TransactionForm extends Component
         $this->items = [$this->emptyRow()];
     }
 
+    /**
+     * Setiap permintaan Livewire, tanggal otomatis diperbarui ke waktu sekarang.
+     */
+    public function hydrate(): void
+    {
+        if ($this->autoTime) {
+            $this->transactedAt = now()->format('Y-m-d\TH:i');
+        }
+    }
+
+    /**
+     * Dipanggil Livewire saat pengguna mengubah kolom tanggal sendiri.
+     */
+    public function updatedTransactedAt(): void
+    {
+        $this->autoTime = false;
+    }
+
+    public function useCurrentTime(): void
+    {
+        $this->autoTime = true;
+        $this->transactedAt = now()->format('Y-m-d\TH:i');
+    }
+
     private function fillFromTransaction(Transaction $transaction): void
     {
         $transaction->load('items.product.currentPrice', 'customer');
 
         $this->transactionId = $transaction->id;
         $this->originalStatus = $transaction->status->value;
+        $this->autoTime = false;
         $this->transactedAt = $transaction->transacted_at->format('Y-m-d\TH:i');
         $this->channel = $transaction->channel->value;
         $this->paymentStatus = $transaction->payment_status->value;
+        $this->paidAmount = $transaction->payment_status === PaymentStatus::Partial ? Format::thousands($transaction->paid_amount) : '';
         $this->note = $transaction->note ?? '';
 
         if ($transaction->customer) {
@@ -148,14 +182,25 @@ class TransactionForm extends Component
         }
     }
 
+    /**
+     * Maksimal 20 barang yang namanya cocok, dikelompokkan per satuan
+     * (urutan satuan mengikuti config('shop.units')), lalu urut nama di dalam kelompok.
+     */
     private function searchProducts(string $term): array
     {
+        $unitOrder = array_flip(config('shop.units'));
+
         return Product::selectable()
             ->with('currentPrice')
             ->where('name', 'like', '%'.$term.'%')
             ->orderBy('name')
-            ->limit(8)
+            ->limit(20)
             ->get()
+            ->sortBy([
+                fn (Product $a, Product $b) => ($unitOrder[$a->unit] ?? PHP_INT_MAX) <=> ($unitOrder[$b->unit] ?? PHP_INT_MAX),
+                fn (Product $a, Product $b) => strcmp($a->name, $b->name),
+            ])
+            ->values()
             ->map(fn (Product $p) => [
                 'id' => $p->id,
                 'name' => $p->name,
@@ -179,7 +224,7 @@ class TransactionForm extends Component
             ->orderBy('name')
             ->limit(8)
             ->get()
-            ->map(fn (Customer $c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])
+            ->map(fn (Customer $c) => ['id' => $c->id, 'label' => $c->displayName(), 'phone' => $c->phone])
             ->all();
     }
 
@@ -242,7 +287,7 @@ class TransactionForm extends Component
 
         $this->customerMode = 'existing';
         $this->customerId = $customer->id;
-        $this->customerLabel = $customer->phone ? $customer->name.' ('.$customer->phone.')' : $customer->name;
+        $this->customerLabel = $customer->phone ? $customer->displayName().' ('.$customer->phone.')' : $customer->displayName();
         $this->customerSearch = '';
         $this->customerResults = [];
         $this->refreshCustomerPrices();
@@ -328,6 +373,16 @@ class TransactionForm extends Component
         return TransactionService::calculateSubtotal($quantity, (int) $unitPrice, $discount);
     }
 
+    /**
+     * Sisa yang belum dibayar untuk status "Sebagian".
+     */
+    public function remaining(): int
+    {
+        $paid = Parse::rupiah($this->paidAmount);
+
+        return max(0, $this->total() - (is_int($paid) ? $paid : 0));
+    }
+
     public function total(): int
     {
         return array_sum(array_map(fn (array $row) => $this->rowSubtotal($row), $this->items));
@@ -406,9 +461,10 @@ class TransactionForm extends Component
         };
 
         $data = [
-            'transacted_at' => str_replace('T', ' ', $this->transactedAt),
+            'transacted_at' => $this->autoTime ? now()->format('Y-m-d H:i:s') : str_replace('T', ' ', $this->transactedAt),
             'channel' => $this->channel,
             'payment_status' => $this->paymentStatus,
+            'paid_amount' => $this->paymentStatus === PaymentStatus::Partial->value ? Parse::rupiah($this->paidAmount) : null,
             'note' => $this->note !== '' ? $this->note : null,
             'customer' => $customer,
             'items' => $items,

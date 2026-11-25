@@ -337,4 +337,33 @@ class TransactionFormTest extends TestCase
             ->assertSeeHtml('data-clear-default="1"')
             ->assertSeeHtml('data-clear-default="0"');
     }
+
+    public function test_search_results_are_grouped_by_unit_then_sorted_by_name(): void
+    {
+        foreach ([['GULA PASIR', 'kg'], ['GULA MERAH', 'kg'], ['GULA SACHET', 'pcs'], ['GULA BATU', 'pak']] as [$name, $unit]) {
+            $product = Product::factory()->create(['name' => $name, 'unit' => $unit]);
+            ProductPrice::factory()->for($product)->create(['sell_price' => 1000]);
+        }
+
+        $component = Livewire::test(TransactionForm::class)->set('items.0.search', 'gula');
+
+        $results = $component->get('items.0.results');
+        $this->assertSame(['GULA SACHET', 'GULA BATU', 'GULA MERAH', 'GULA PASIR'], array_column($results, 'name'));
+        $this->assertSame(['pcs', 'pak', 'kg', 'kg'], array_column($results, 'unit'));
+
+        $component->assertSeeInOrder(['pcs', 'GULA SACHET', 'pak', 'GULA BATU', 'kg', 'GULA MERAH', 'GULA PASIR']);
+    }
+
+    public function test_search_returns_at_most_twenty_results(): void
+    {
+        foreach (range(1, 25) as $n) {
+            Product::factory()->create(['name' => sprintf('KOPI %02d', $n), 'unit' => 'pcs']);
+        }
+
+        $results = Livewire::test(TransactionForm::class)->set('items.0.search', 'kopi')->get('items.0.results');
+
+        $this->assertCount(20, $results);
+        $this->assertSame('KOPI 01', $results[0]['name']);
+        $this->assertSame('KOPI 20', $results[19]['name']);
+    }
 }

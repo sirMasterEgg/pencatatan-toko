@@ -66,7 +66,7 @@ test('harga pelanggan: dipakai di form transaksi dan bisa diperbarui dari nota',
     await expect(page.getByLabel('Harga satuan')).toHaveValue('20.000');
 
     await page.getByPlaceholder(/Cari nama atau nomor HP/).fill(customer);
-    await page.getByRole('button', { name: new RegExp(customer) }).click();
+    await page.getByRole('button', { name: new RegExp(customer, 'i') }).click();
     await expect(page.getByLabel('Harga satuan')).toHaveValue('19.000');
     await expect(page.getByText('Harga pelanggan: Rp19.000')).toBeVisible();
 

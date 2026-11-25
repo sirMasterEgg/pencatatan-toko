@@ -6,6 +6,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\TransactionStatus;
 use App\Models\Transaction;
 use App\Services\TransactionService;
+use App\Support\Parse;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -92,9 +93,14 @@ class TransactionController extends Controller
 
     public function updatePaymentStatus(Request $request, Transaction $transaction, TransactionService $service): RedirectResponse
     {
-        $request->validate(['payment_status' => ['required', Rule::enum(PaymentStatus::class)]]);
+        $request->merge(['paid_amount' => Parse::rupiah($request->input('paid_amount'))]);
 
-        $service->updatePaymentStatus($transaction, PaymentStatus::from($request->input('payment_status')));
+        $data = $request->validate([
+            'payment_status' => ['required', Rule::enum(PaymentStatus::class)],
+            'paid_amount' => ['nullable', 'integer', 'min:0'],
+        ], [], ['paid_amount' => 'nominal dibayar']);
+
+        $service->updatePaymentStatus($transaction, PaymentStatus::from($data['payment_status']), $data['paid_amount'] ?? null);
 
         return redirect()->route('transactions.show', $transaction)->with('success', 'Status bayar diperbarui.');
     }

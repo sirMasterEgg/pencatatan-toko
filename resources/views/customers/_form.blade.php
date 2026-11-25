@@ -1,6 +1,6 @@
 <div class="mb-3">
     <label for="name" class="form-label">Nama</label>
-    <input type="text" id="name" name="name" value="{{ old('name', $customer->name ?? '') }}" class="form-control @error('name') is-invalid @enderror" required>
+    <input type="text" id="name" name="name" value="{{ old('name', $customer->name ?? '') }}" class="form-control text-uppercase @error('name') is-invalid @enderror" autocapitalize="characters" required>
     @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
 </div>
 <div class="mb-3">
@@ -11,7 +11,7 @@
 </div>
 <div class="mb-3">
     <label for="address" class="form-label">Alamat</label>
-    <input type="text" id="address" name="address" value="{{ old('address', $customer->address ?? '') }}" class="form-control @error('address') is-invalid @enderror">
+    <input type="text" id="address" name="address" value="{{ old('address', $customer->address ?? '') }}" class="form-control text-uppercase @error('address') is-invalid @enderror" autocapitalize="characters">
     @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
 </div>
 <div class="mb-3">

@@ -57,7 +57,7 @@ class CustomerTest extends TestCase
             ->assertSessionDoesntHaveErrors()
             ->assertRedirect();
 
-        $this->assertSame('Nama Baru', $customer->fresh()->name);
+        $this->assertSame('NAMA BARU', $customer->fresh()->name);
     }
 
     public function test_search_by_phone_prefix_finds_customer(): void
@@ -99,7 +99,7 @@ class CustomerTest extends TestCase
         $found = $service->findOrCreate('Nama Lain', '081200001234');
 
         $this->assertSame($first->id, $found->id);
-        $this->assertSame('Bu Sari', $found->fresh()->name);
+        $this->assertSame('BU SARI', $found->fresh()->name);
     }
 
     public function test_find_or_create_without_phone_creates_each_time(): void

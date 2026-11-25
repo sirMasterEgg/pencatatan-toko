@@ -66,6 +66,7 @@ Parameter query, semuanya opsional:
 
 - Validasi: `payment_status` wajib, `Rule::enum(PaymentStatus::class)`.
 - Panggil `$service->updatePaymentStatus($transaction, PaymentStatus::from($request->input('payment_status')))`.
+- Catatan: tugas 26 menambah kolom `paid_amount` di form ini dan meneruskannya ke service.
 - Redirect ke `transactions.show` dengan pesan `Status bayar diperbarui.`
 
 Controller tidak boleh mengubah model `Transaction` secara langsung.

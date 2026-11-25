@@ -77,7 +77,7 @@
                                 <span class="fw-semibold">{{ $transaction->number }}</span>
                                 <span>{{ \App\Support\Format::rupiah($transaction->total) }}</span>
                             </div>
-                            <small class="text-muted">{{ $transaction->transacted_at->format('H:i') }} · {{ $transaction->customer?->name ?? 'Pembeli umum' }}</small>
+                            <small class="text-muted">{{ $transaction->transacted_at->format('H:i') }} · {{ $transaction->customer?->displayName() ?? 'Pembeli umum' }}</small>
                         </a>
                     @endforeach
                 </div>

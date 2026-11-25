@@ -11,20 +11,65 @@
         </div>
     </div>
 
-    <form method="GET" action="{{ route('products.index') }}" class="row g-2 mb-3">
-        <div class="col-12 col-sm-6">
-            <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Cari nama atau kode" aria-label="Cari">
+    <form method="GET" action="{{ route('products.index') }}" class="card card-body mb-3">
+        <div class="row g-2">
+            <div class="col-12">
+                <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Cari nama atau kode" aria-label="Cari">
+            </div>
+            <div class="col-6">
+                <select name="status" class="form-select" aria-label="Status">
+                    <option value="">Semua</option>
+                    @foreach ($statuses as $status)
+                        <option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ $status->label() }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-6">
+                <select name="sort" class="form-select" aria-label="Urutkan">
+                    @foreach ($sorts as $value => $label)
+                        <option value="{{ $value }}" @selected($sort === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
-        <div class="col-8 col-sm-4">
-            <select name="status" class="form-select" aria-label="Status">
-                <option value="">Semua</option>
-                @foreach ($statuses as $status)
-                    <option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ $status->label() }}</option>
-                @endforeach
-            </select>
+
+        <div class="collapse {{ $filtersOpen ? 'show' : '' }}" id="productFilters">
+            <div class="row g-2 mt-0">
+                <div class="col-6">
+                    <label for="filter-unit" class="form-label small mb-0">Satuan</label>
+                    <select id="filter-unit" name="unit" class="form-select">
+                        <option value="">Semua satuan</option>
+                        @foreach (config('shop.units') as $unit)
+                            <option value="{{ $unit }}" @selected(request('unit') === $unit)>{{ $unit }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label for="filter-category" class="form-label small mb-0">Kategori</label>
+                    <select id="filter-category" name="category" class="form-select">
+                        <option value="">Semua kategori</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category }}" @selected(request('category') === $category)>{{ $category }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label for="filter-min-price" class="form-label small mb-0">Harga minimal</label>
+                    <input type="text" id="filter-min-price" name="min_price" value="{{ \App\Support\Format::thousands(request('min_price')) }}" inputmode="numeric" autocomplete="off" data-rupiah class="form-control @error('min_price') is-invalid @enderror">
+                    @error('min_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-6">
+                    <label for="filter-max-price" class="form-label small mb-0">Harga maksimal</label>
+                    <input type="text" id="filter-max-price" name="max_price" value="{{ \App\Support\Format::thousands(request('max_price')) }}" inputmode="numeric" autocomplete="off" data-rupiah class="form-control @error('max_price') is-invalid @enderror">
+                    @error('max_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+            </div>
         </div>
-        <div class="col-4 col-sm-2">
-            <button type="submit" class="btn btn-outline-primary w-100">Cari</button>
+
+        <div class="d-flex gap-2 align-items-center mt-2">
+            <button type="submit" class="btn btn-outline-primary">Cari</button>
+            <button type="button" class="btn btn-link px-0" data-bs-toggle="collapse" data-bs-target="#productFilters" aria-expanded="{{ $filtersOpen ? 'true' : 'false' }}" aria-controls="productFilters">Filter lainnya</button>
+            <a href="{{ route('products.index') }}" class="ms-auto">Reset</a>
         </div>
     </form>
 
@@ -38,6 +83,9 @@
                         <div>
                             <div class="fw-semibold">{{ $product->name }}</div>
                             <small class="text-muted">{{ $product->unit }}</small>
+                            @if ($sort === 'best_selling')
+                                <small class="text-muted">· Terjual {{ \App\Support\Format::quantity($product->sold_quantity) }}</small>
+                            @endif
                         </div>
                         <div class="text-end">
                             <div>{{ $product->currentPrice ? \App\Support\Format::rupiah($product->currentPrice->sell_price) : '-' }}</div>

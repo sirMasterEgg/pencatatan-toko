@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', $customer->name)
+@section('title', $customer->displayName())
 
 @section('content')
     <div class="d-flex justify-content-between align-items-start mb-3">
-        <h1 class="h4 mb-0">{{ $customer->name }}</h1>
+        <h1 class="h4 mb-0">{{ $customer->displayName() }}</h1>
         <div class="d-flex gap-2">
             <a href="{{ route('customers.edit', $customer) }}" class="btn btn-outline-primary btn-sm">Ubah</a>
             <form method="POST" action="{{ route('customers.destroy', $customer) }}" onsubmit="return confirm('Hapus pelanggan ini?')">

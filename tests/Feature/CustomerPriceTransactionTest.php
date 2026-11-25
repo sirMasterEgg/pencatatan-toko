@@ -87,7 +87,7 @@ class CustomerPriceTransactionTest extends TestCase
     {
         $this->service->create($this->data(16000, 'customer_price', ['name' => 'Pak Budi', 'phone' => '0813-1111-2222']));
 
-        $budi = Customer::where('name', 'Pak Budi')->firstOrFail();
+        $budi = Customer::where('name', 'PAK BUDI')->firstOrFail();
         $this->assertSame(16000, $this->prices->priceAt($budi->id, $this->gula->id));
     }
 

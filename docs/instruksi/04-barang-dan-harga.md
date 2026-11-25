@@ -84,6 +84,7 @@ Route::post('/products/{product}/mark-reviewed', [ProductController::class, 'mar
 `index`
 
 - Parameter query: `q` (pencarian nama atau kode) dan `status` (nilai `ProductStatus`, opsional).
+- Catatan: tugas 22 (`22-filter-dan-urutan-barang.md`) menambah filter satuan, kategori, rentang harga, dan pilihan urutan.
 - Tanpa filter status, tampilkan semua kecuali `merged`.
 - Muat `currentPrice` dengan `with('currentPrice')`.
 - Urutkan berdasarkan `name`. Pagination 20 per halaman dengan `withQueryString()`.

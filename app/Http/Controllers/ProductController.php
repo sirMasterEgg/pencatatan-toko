@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ProductStatus;
 use App\Enums\TransactionStatus;
 use App\Models\Product;
+use App\Models\ProductPrice;
 use App\Models\TransactionItem;
 use App\Services\ProductService;
 use App\Support\Parse;
@@ -18,14 +19,37 @@ class ProductController extends Controller
 {
     public function __construct(private ProductService $products) {}
 
+    /**
+     * Pilihan urutan di daftar barang: nilai di URL => label di layar.
+     */
+    public const SORTS = [
+        'name_asc' => 'Nama A-Z',
+        'name_desc' => 'Nama Z-A',
+        'price_asc' => 'Harga termurah',
+        'price_desc' => 'Harga termahal',
+        'newest' => 'Terbaru',
+        'oldest' => 'Terlama',
+        'best_selling' => 'Paling laku',
+    ];
+
     public function index(Request $request): View
     {
+        $request->merge([
+            'min_price' => Parse::rupiah($request->query('min_price')),
+            'max_price' => Parse::rupiah($request->query('max_price')),
+        ]);
+
         $validated = $request->validate([
             'q' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', Rule::enum(ProductStatus::class)],
+            'unit' => ['nullable', Rule::in(config('shop.units'))],
+            'category' => ['nullable', 'string', 'max:255'],
+            'min_price' => ['nullable', 'integer', 'min:0'],
+            'max_price' => ['nullable', 'integer', 'min:0'],
+            'sort' => ['nullable', Rule::in(array_keys(self::SORTS))],
         ]);
 
-        $query = Product::query()->with('currentPrice');
+        $query = Product::query()->select('products.*')->with('currentPrice');
 
         if (! empty($validated['status'])) {
             $query->where('status', $validated['status']);
@@ -38,9 +62,59 @@ class ProductController extends Controller
             $query->where(fn ($q) => $q->where('name', 'like', $term)->orWhere('code', 'like', $term));
         }
 
+        if (! empty($validated['unit'])) {
+            $query->where('unit', $validated['unit']);
+        }
+
+        if (! empty($validated['category'])) {
+            $query->where('category', $validated['category']);
+        }
+
+        if (isset($validated['min_price'])) {
+            $query->whereHas('currentPrice', fn ($q) => $q->where('sell_price', '>=', $validated['min_price']));
+        }
+
+        if (isset($validated['max_price'])) {
+            $query->whereHas('currentPrice', fn ($q) => $q->where('sell_price', '<=', $validated['max_price']));
+        }
+
+        $sort = $validated['sort'] ?? 'name_asc';
+        $currentSellPrice = ProductPrice::query()
+            ->select('sell_price')
+            ->whereColumn('product_id', 'products.id')
+            ->where('effective_from', '<=', now())
+            ->orderByDesc('effective_from')
+            ->orderByDesc('id')
+            ->limit(1);
+        $soldQuantity = TransactionItem::query()
+            ->selectRaw('COALESCE(SUM(quantity), 0)')
+            ->whereColumn('product_id', 'products.id')
+            ->whereHas('transaction', fn ($q) => $q->where('status', TransactionStatus::Confirmed));
+
+        match ($sort) {
+            'name_desc' => $query->orderByDesc('name'),
+            'price_asc' => $query->orderBy($currentSellPrice),
+            'price_desc' => $query->orderByDesc($currentSellPrice),
+            'newest' => $query->orderByDesc('created_at')->orderByDesc('id'),
+            'oldest' => $query->orderBy('created_at')->orderBy('id'),
+            'best_selling' => $query->addSelect(['sold_quantity' => $soldQuantity])->orderByDesc($soldQuantity),
+            default => $query->orderBy('name'),
+        };
+
+        if ($sort !== 'name_asc' && $sort !== 'name_desc') {
+            $query->orderBy('name');
+        }
+
+        $filtersOpen = ! empty($validated['unit']) || ! empty($validated['category'])
+            || isset($validated['min_price']) || isset($validated['max_price']);
+
         return view('products.index', [
-            'products' => $query->orderBy('name')->paginate(20)->withQueryString(),
+            'products' => $query->paginate(20)->withQueryString(),
             'statuses' => [ProductStatus::Active, ProductStatus::NeedsReview, ProductStatus::Inactive],
+            'categories' => Product::query()->whereNotNull('category')->where('category', '!=', '')->distinct()->orderBy('category')->pluck('category'),
+            'sorts' => self::SORTS,
+            'sort' => $sort,
+            'filtersOpen' => $filtersOpen,
         ]);
     }
 

@@ -85,7 +85,7 @@ class TransactionPageTest extends TestCase
             ->assertOk()
             ->assertSee('GULA PASIR')
             ->assertSee('Rp18.000')
-            ->assertSee('Bu Sari');
+            ->assertSee('BU SARI');
     }
 
     public function test_show_displays_list_price_when_different(): void

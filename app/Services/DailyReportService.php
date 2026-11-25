@@ -27,7 +27,7 @@ class DailyReportService
         $count = $confirmed()->count();
 
         $unpaid = $confirmed()->whereIn('payment_status', [PaymentStatus::Unpaid, PaymentStatus::Partial]);
-        $unpaidTotal = (int) (clone $unpaid)->sum('total');
+        $unpaidTotal = (int) (clone $unpaid)->sum('total') - (int) (clone $unpaid)->sum('paid_amount');
         $unpaidCount = (clone $unpaid)->count();
 
         $cancelledCount = Transaction::query()
