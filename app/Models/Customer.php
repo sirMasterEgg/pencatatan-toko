@@ -14,6 +14,14 @@ class Customer extends Model
     /** @use HasFactory<CustomerFactory> */
     use HasFactory;
 
+    /**
+     * Tampilan pelanggan di layar: "NAMA - ALAMAT", atau "NAMA" jika alamat kosong.
+     */
+    public function displayName(): string
+    {
+        return $this->address ? $this->name.' - '.$this->address : $this->name;
+    }
+
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);

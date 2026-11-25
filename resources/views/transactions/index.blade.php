@@ -57,7 +57,7 @@
                     </div>
                     <div class="d-flex flex-wrap gap-2 align-items-center small text-muted">
                         <span>{{ $transaction->transacted_at->format('d/m/Y H:i') }}</span>
-                        <span>{{ $transaction->customer?->name ?? 'Pembeli umum' }}</span>
+                        <span>{{ $transaction->customer?->displayName() ?? 'Pembeli umum' }}</span>
                         @if ($cancelled)
                             <span class="badge text-bg-danger">{{ $transaction->status->label() }}</span>
                         @elseif ($transaction->status === \App\Enums\TransactionStatus::Draft)

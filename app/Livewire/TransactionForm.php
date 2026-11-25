@@ -190,7 +190,7 @@ class TransactionForm extends Component
             ->orderBy('name')
             ->limit(8)
             ->get()
-            ->map(fn (Customer $c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])
+            ->map(fn (Customer $c) => ['id' => $c->id, 'label' => $c->displayName(), 'phone' => $c->phone])
             ->all();
     }
 
@@ -253,7 +253,7 @@ class TransactionForm extends Component
 
         $this->customerMode = 'existing';
         $this->customerId = $customer->id;
-        $this->customerLabel = $customer->phone ? $customer->name.' ('.$customer->phone.')' : $customer->name;
+        $this->customerLabel = $customer->phone ? $customer->displayName().' ('.$customer->phone.')' : $customer->displayName();
         $this->customerSearch = '';
         $this->customerResults = [];
         $this->refreshCustomerPrices();

@@ -18,7 +18,7 @@
         <div class="list-group mb-3">
             @foreach ($customers as $customer)
                 <a href="{{ route('customers.show', $customer) }}" class="list-group-item list-group-item-action">
-                    <div class="fw-semibold">{{ $customer->name }}</div>
+                    <div class="fw-semibold">{{ $customer->displayName() }}</div>
                     <small class="text-muted">{{ $customer->phone ?: 'Tanpa nomor HP' }}</small>
                 </a>
             @endforeach

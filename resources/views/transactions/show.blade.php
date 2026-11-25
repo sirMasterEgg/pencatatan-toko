@@ -35,7 +35,7 @@
                 <dt class="col-5">Pelanggan</dt>
                 <dd class="col-7">
                     @if ($transaction->customer)
-                        <a href="{{ route('customers.show', $transaction->customer) }}">{{ $transaction->customer->name }}</a>
+                        <a href="{{ route('customers.show', $transaction->customer) }}">{{ $transaction->customer->displayName() }}</a>
                         @if ($transaction->customer->phone)<div class="small text-muted">{{ $transaction->customer->phone }}</div>@endif
                     @else
                         Pembeli umum

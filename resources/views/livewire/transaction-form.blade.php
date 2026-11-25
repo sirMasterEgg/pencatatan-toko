@@ -40,7 +40,7 @@
                         <div class="list-group mt-2">
                             @foreach ($customerResults as $c)
                                 <button type="button" class="list-group-item list-group-item-action" wire:key="cust-{{ $c['id'] }}" wire:click="selectCustomer({{ $c['id'] }})">
-                                    {{ $c['name'] }}@if ($c['phone']) <small class="text-muted">({{ $c['phone'] }})</small>@endif
+                                    {{ $c['label'] }}@if ($c['phone']) <small class="text-muted">({{ $c['phone'] }})</small>@endif
                                 </button>
                             @endforeach
                         </div>
@@ -56,7 +56,7 @@
                 @else
                     <div class="mb-2">
                         <label for="customerName" class="form-label">Nama</label>
-                        <input type="text" id="customerName" class="form-control @error('customer.name') is-invalid @enderror" wire:model="customerName">
+                        <input type="text" id="customerName" class="form-control text-uppercase @error('customer.name') is-invalid @enderror" autocapitalize="characters" wire:model="customerName">
                         @error('customer.name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="mb-2">
