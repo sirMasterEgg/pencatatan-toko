@@ -148,14 +148,25 @@ class TransactionForm extends Component
         }
     }
 
+    /**
+     * Maksimal 20 barang yang namanya cocok, dikelompokkan per satuan
+     * (urutan satuan mengikuti config('shop.units')), lalu urut nama di dalam kelompok.
+     */
     private function searchProducts(string $term): array
     {
+        $unitOrder = array_flip(config('shop.units'));
+
         return Product::selectable()
             ->with('currentPrice')
             ->where('name', 'like', '%'.$term.'%')
             ->orderBy('name')
-            ->limit(8)
+            ->limit(20)
             ->get()
+            ->sortBy([
+                fn (Product $a, Product $b) => ($unitOrder[$a->unit] ?? PHP_INT_MAX) <=> ($unitOrder[$b->unit] ?? PHP_INT_MAX),
+                fn (Product $a, Product $b) => strcmp($a->name, $b->name),
+            ])
+            ->values()
             ->map(fn (Product $p) => [
                 'id' => $p->id,
                 'name' => $p->name,

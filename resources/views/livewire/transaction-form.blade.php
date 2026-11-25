@@ -76,13 +76,7 @@
                         <input type="text" class="form-control @error("items.$i.search") is-invalid @enderror" aria-label="Cari barang" placeholder="Ketik nama barang" wire:model.live.debounce.300ms="items.{{ $i }}.search">
                         @error("items.$i.search") <div class="invalid-feedback">{{ $message }}</div> @enderror
                         @if (count($row['results']) > 0)
-                            <div class="list-group mt-2">
-                                @foreach ($row['results'] as $r)
-                                    <button type="button" class="list-group-item list-group-item-action" wire:key="res-{{ $row['key'] }}-{{ $r['id'] }}" wire:click="selectProduct({{ $i }}, {{ $r['id'] }})">
-                                        {{ $r['name'] }} <small class="text-muted">{{ $r['unit'] }} - {{ \App\Support\Format::rupiah($r['price']) }}</small>
-                                    </button>
-                                @endforeach
-                            </div>
+                            @include('livewire._product-results', ['results' => $row['results'], 'i' => $i, 'keyPrefix' => 'res-'.$row['key']])
                         @endif
                         @if (mb_strlen(trim($row['search'])) >= 2)
                             <button type="button" class="btn btn-outline-primary btn-sm mt-2" wire:click="startNewProduct({{ $i }})">+ Tambah "{{ $row['search'] }}" sebagai barang baru</button>
@@ -129,13 +123,7 @@
                             @if (count($row['results']) > 0)
                                 <div class="alert alert-warning">
                                     <strong>Barang yang mirip:</strong>
-                                    <div class="list-group mt-2">
-                                        @foreach ($row['results'] as $r)
-                                            <button type="button" class="list-group-item list-group-item-action" wire:key="sim-{{ $row['key'] }}-{{ $r['id'] }}" wire:click="selectProduct({{ $i }}, {{ $r['id'] }})">
-                                                {{ $r['name'] }} <small class="text-muted">{{ $r['unit'] }} - {{ \App\Support\Format::rupiah($r['price']) }}</small>
-                                            </button>
-                                        @endforeach
-                                    </div>
+                                    @include('livewire._product-results', ['results' => $row['results'], 'i' => $i, 'keyPrefix' => 'sim-'.$row['key']])
                                 </div>
                             @endif
                         @endif
