@@ -30,6 +30,7 @@ Perilaku:
 1. Normalkan nomor dengan `Phone::normalize($phone)`.
 2. Jika nomor tidak kosong dan ada pelanggan dengan nomor itu, kembalikan pelanggan tersebut. Jangan mengubah nama atau alamatnya.
 3. Selain itu, buat pelanggan baru dengan nama yang sudah di-`trim`, nomor yang sudah dinormalkan (boleh `null`), dan alamat.
+   (Catatan: sejak tugas 24, nama dan alamat disimpan huruf besar lewat `CustomerService::normalizeText`.)
 
 ### 2. Rute
 
@@ -90,6 +91,7 @@ Dengan begitu aturan unik memeriksa nomor yang sudah dinormalkan. Pesan galat un
 - Judul "Pelanggan" dan tombol "Tambah pelanggan".
 - Form pencarian satu kolom `q` dengan placeholder `Cari nama atau nomor HP`.
 - Daftar memakai `list-group`: nama dan nomor HP. Pelanggan tanpa nomor menampilkan `Tanpa nomor HP`.
+- Catatan: sejak tugas 24 (`24-pelanggan-huruf-besar.md`), nama pelanggan di semua halaman ditampilkan dengan `$customer->displayName()` ("NAMA - ALAMAT").
 - Jika kosong, tampilkan `Belum ada pelanggan.`
 
 `_form`

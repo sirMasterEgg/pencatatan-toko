@@ -89,6 +89,7 @@ Livewire 4:
 - Isian angka dari form dirapikan dengan `App\Support\Parse` sebelum divalidasi: `Parse::quantity()` untuk jumlah (koma dan titik sama-sama tanda desimal, sejak tugas 12) dan `Parse::rupiah()` untuk uang (titik ribuan dibuang, sejak tugas 13).
 - Kolom uang di form memakai `type="text"`, `inputmode="numeric"`, dan atribut `data-rupiah`, dengan nilai awal dari `Format::thousands()`. Kolom jumlah memakai `type="text"`. Jangan memakai `type="number"` untuk uang atau jumlah (sejak tugas 12 dan 13).
 - Nama barang disimpan dalam huruf besar lewat `ProductService::normalizeName()` (sejak tugas 14).
+- Nama dan alamat pelanggan disimpan huruf besar lewat `CustomerService::normalizeText()`, dan ditampilkan dengan `Customer::displayName()` sebagai "NAMA - ALAMAT" (sejak tugas 24).
 - Zona waktu aplikasi `Asia/Jakarta`. Tanggal ditampilkan dengan format `d/m/Y H:i`.
 - Nilai status memakai enum PHP di `app/Enums`. Jangan menulis teks status langsung di banyak tempat.
 - Controller tipis: validasi, panggil service atau model, kembalikan view atau redirect.
@@ -132,6 +133,7 @@ Dokumen desain memakai bahasa Indonesia. Kode memakai bahasa Inggris.
 | Harga daftar | `list_price` |
 | Harga pelanggan (salinan di item transaksi) | `customer_price` |
 | Diskon | `discount` |
+| Sudah dibayar | `paid_amount` |
 
 | Nilai di kode | Label di layar |
 |---|---|
@@ -166,6 +168,8 @@ Dokumen desain memakai bahasa Indonesia. Kode memakai bahasa Inggris.
 13. Hanya draf yang boleh dihapus. Draf tidak masuk laporan (sejak tugas 15).
 14. Urutan harga di nota: harga khusus per nota (yang diketik di form), lalu harga pelanggan, lalu harga umum. Harga pelanggan berupa angka tetap. `list_price` di item transaksi tetap salinan harga umum, dan `customer_price` salinan harga pelanggan (sejak tugas 17 dan 18).
 15. Perubahan harga massal tidak boleh berlaku mundur, dan ditolak seluruhnya jika ada harga yang menjadi di bawah Rp0 (sejak tugas 19).
+16. Setiap transaksi menyimpan `paid_amount`: Lunas sama dengan total, Belum bayar 0, Sebagian diisi pemilik (lebih dari Rp0 dan kurang dari total). Piutang adalah total dikurangi `paid_amount`. Tidak ada tabel cicilan (sejak tugas 26).
+17. Transaksi baru yang tanggalnya tidak diubah manual disimpan dengan waktu saat simpan di server. Mengubah draf atau transaksi tidak mengubah tanggalnya kecuali pemilik memintanya (sejak tugas 25).
 
 ## 9. Daftar rute
 
@@ -223,7 +227,8 @@ resources/views/
   layouts/app.blade.php
   auth/ products/ customers/ transactions/ reports/ livewire/
 resources/js/       app.js, rupiah.js (titik ribuan, sejak tugas 13), check-all.js ("Pilih semua", sejak tugas 19),
-                    clear-default.js (Jumlah dan Diskon kosong saat difokus pertama kali, sejak tugas 21)
+                    clear-default.js (Jumlah dan Diskon kosong saat difokus pertama kali, sejak tugas 21),
+                    live-clock.js (tanggal transaksi berjalan, sejak tugas 25)
 tests/Feature/      satu file tes per bagian
 tests/Unit/         tes untuk Format dan Phone
 tests/e2e/          tes Playwright

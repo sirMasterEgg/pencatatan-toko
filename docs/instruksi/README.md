@@ -30,12 +30,17 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 | `19-ubah-harga-massal.md` | Ubah harga banyak barang sekaligus dengan pratinjau | Model AI |
 | `20-simpan-dan-transaksi-baru.md` | Tombol "Simpan & transaksi baru" di form transaksi | Model AI |
 | `21-jumlah-kosong-saat-fokus.md` | Kolom Jumlah (1) dan Diskon (0) kosong saat pertama kali disentuh | Model AI |
+| `22-filter-dan-urutan-barang.md` | Filter satuan, kategori, rentang harga, dan pilihan urutan di daftar barang | Model AI |
+| `23-cari-barang-per-satuan.md` | Hasil cari barang di form transaksi dikelompokkan per satuan | Model AI |
+| `24-pelanggan-huruf-besar.md` | Nama dan alamat pelanggan huruf besar, tampil "NAMA - ALAMAT" | Model AI |
+| `25-tanggal-berjalan.md` | Tanggal transaksi berjalan sendiri, bisa diubah manual | Model AI |
+| `26-nominal-bayar-sebagian.md` | Nominal dibayar untuk status "Sebagian" dan piutang dari sisa | Model AI |
 
 ## Cara pakai
 
 1. Salin folder ini ke dalam proyek, misalnya ke `docs/instruksi/`.
 2. Pindahkan `CLAUDE.md` ke akar proyek jika Anda memakai Claude Code. File itu ringkasan `00-aturan-umum.md` dan mengandaikan file tugas berada di `docs/instruksi/`. Untuk alat lain yang membaca file aturan otomatis, salin isinya ke file yang sesuai, misalnya `AGENTS.md`.
-3. Kerjakan tugas berurutan dari 01 sampai 21. Satu tugas satu sesi percakapan baru. Tugas 01 sampai 10 membangun tahap 1. Tugas 11 dan seterusnya adalah perbaikan setelah tahap 1 selesai.
+3. Kerjakan tugas berurutan dari 01 sampai 26. Satu tugas satu sesi percakapan baru. Tugas 01 sampai 10 membangun tahap 1. Tugas 11 dan seterusnya adalah perbaikan setelah tahap 1 selesai.
 4. Di awal setiap sesi, berikan perintah seperti ini:
 
    ```
@@ -56,6 +61,7 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 - Tugas 06 dan 07 paling sulit. Pertimbangkan memakai model yang lebih kuat khusus untuk dua tugas ini.
 - Dari tugas 12 sampai 16, yang paling berisiko adalah 15 dan 16, karena mengubah aturan bisnis inti. Kode dan tesnya sudah ditulis lengkap di file tugas, tetapi tetap periksa laporannya dengan teliti.
 - Tugas 15 dan 16 saling bergantung. Setelah tugas 15 dan sebelum tugas 16 selesai, halaman "Ubah transaksi" masih menampilkan form kosong. Jangan dipakai untuk data sungguhan di antara keduanya.
+- Tugas 25 dan 26 mengubah form transaksi dan `TransactionService`. Periksa laporannya dengan teliti.
 - Tugas 17 dan 18 juga berpasangan. Setelah tugas 17, harga pelanggan sudah bisa diatur, tetapi form transaksi baru memakainya setelah tugas 18. Tugas 18 paling berisiko di rangkaian ini, karena mengubah form transaksi dan `TransactionService`.
 
 ## Keputusan yang sudah diambil
@@ -80,6 +86,11 @@ File ini untuk Anda (pemilik proyek), bukan untuk model AI. Isinya cara memakai 
 | Harga pelanggan | Angka tetap per pelanggan per barang, disimpan sebagai riwayat. Diatur di halaman pelanggan atau lewat "Jadikan harga pelanggan" di form transaksi. Urutan: harga khusus nota, harga pelanggan, harga umum (tugas 17 dan 18) |
 | Simpan & transaksi baru | Tombol ketiga di form transaksi baru dan saat mengubah draf. Menyimpan sebagai transaksi, lalu membuka form kosong (tanggal sekarang) dengan tautan ke transaksi tadi. Tidak tampil saat mengubah transaksi yang sudah dikonfirmasi (tugas 20) |
 | Jumlah dan Diskon di form transaksi | Berisi 1 dan 0. Saat pertama kali disentuh langsung kosong, dan kembali ke 1 atau 0 jika ditinggal kosong (tugas 21) |
+| Daftar barang | Filter satuan, kategori, rentang harga. Urutan nama, harga, tanggal ditambahkan, dan paling laku (tugas 22) |
+| Hasil cari barang | Dikelompokkan per satuan mengikuti urutan config, nama A-Z di dalam kelompok, maksimal 20 (tugas 23) |
+| Pelanggan | Nama dan alamat huruf besar. Tampil "NAMA - ALAMAT" di semua tempat, atau "NAMA" jika alamat kosong (tugas 24) |
+| Tanggal transaksi | Form baru mengikuti waktu sekarang dan disimpan dengan waktu saat simpan. Diubah manual menghentikannya. Mengubah draf atau transaksi tetap memakai tanggal asli (tugas 25) |
+| Bayar sebagian | Satu angka "sudah dibayar" (bukan riwayat cicilan). Piutang = sisa yang belum dibayar (tugas 26) |
 | Ubah harga massal | Naik atau turun dalam rupiah, harga modal opsional, bisa dijadwalkan, ada pratinjau. Harga pelanggan ikut berubah jika dicentang (bawaan tercentang) (tugas 19) |
 
 ## Yang sengaja belum dibuat
