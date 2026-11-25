@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\TransactionStatus;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Services\CustomerService;
 use App\Services\CustomerPriceService;
 use App\Support\Phone;
 use Illuminate\Http\RedirectResponse;
@@ -95,7 +96,7 @@ class CustomerController extends Controller
     {
         $request->merge(['phone' => Phone::normalize($request->input('phone'))]);
 
-        return $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20', Rule::unique('customers', 'phone')->ignore($customer?->id)],
             'address' => ['nullable', 'string', 'max:255'],
@@ -103,5 +104,10 @@ class CustomerController extends Controller
         ], [
             'phone.unique' => 'Nomor HP ini sudah dipakai pelanggan lain.',
         ]);
+
+        $data['name'] = CustomerService::normalizeText($data['name']);
+        $data['address'] = CustomerService::normalizeText($data['address'] ?? null);
+
+        return $data;
     }
 }

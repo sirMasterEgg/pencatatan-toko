@@ -57,7 +57,7 @@ class FullFlowTest extends TestCase
         $this->get("/transactions/{$transaction->id}")
             ->assertOk()
             ->assertSee('Rp248.000')
-            ->assertSee('Bu Sari')
+            ->assertSee('BU SARI')
             ->assertSee('Harga daftar');
 
         // 6. Barang perlu dirapikan

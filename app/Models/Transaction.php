@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['number', 'transacted_at', 'customer_id', 'channel', 'input_source', 'status', 'payment_status', 'total', 'note', 'cancelled_at', 'cancel_reason'])]
+#[Fillable(['number', 'transacted_at', 'customer_id', 'channel', 'input_source', 'status', 'payment_status', 'total', 'paid_amount', 'note', 'cancelled_at', 'cancel_reason'])]
 class Transaction extends Model
 {
     /**
@@ -28,6 +28,7 @@ class Transaction extends Model
             'payment_status' => PaymentStatus::class,
             'channel' => Channel::class,
             'total' => 'integer',
+            'paid_amount' => 'integer',
         ];
     }
 
@@ -48,6 +49,14 @@ class Transaction extends Model
     {
         return $this->status === TransactionStatus::Draft
             || ($this->status === TransactionStatus::Confirmed && $this->payment_status === PaymentStatus::Unpaid);
+    }
+
+    /**
+     * Sisa yang belum dibayar.
+     */
+    public function remainingAmount(): int
+    {
+        return max(0, $this->total - $this->paid_amount);
     }
 
     public function scopeConfirmed(Builder $query): void

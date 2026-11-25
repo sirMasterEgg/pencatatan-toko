@@ -185,7 +185,7 @@ class TransactionDraftAndEditTest extends TestCase
         $gula = $this->productWithPrice('GULA', 'kg', 18000);
 
         foreach (['paid', 'partial'] as $payment) {
-            $transaction = $this->service->create($this->data([$this->item($gula, 1, 18000)], ['payment_status' => $payment]));
+            $transaction = $this->service->create($this->data([$this->item($gula, 1, 18000)], ['payment_status' => $payment, 'paid_amount' => 5000]));
             $this->assertUpdateRejected($transaction, $gula);
         }
 

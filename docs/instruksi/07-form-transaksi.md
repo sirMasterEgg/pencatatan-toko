@@ -59,7 +59,7 @@ Semua properti `public`.
 
 | Properti | Tipe | Nilai awal | Keterangan |
 |---|---|---|---|
-| `transactedAt` | string | waktu sekarang, format `Y-m-d\TH:i` | untuk `input type="datetime-local"` |
+| `transactedAt` | string | waktu sekarang, format `Y-m-d\TH:i` | untuk `input type="datetime-local"`. Sejak tugas 25 ditemani `$autoTime` (tanggal berjalan) |
 | `channel` | string | `'store'` | |
 | `paymentStatus` | string | `'paid'` | |
 | `note` | string | `''` | |
@@ -107,7 +107,7 @@ Hook Livewire. Tangani dua kasus:
 
 - Jika `$property` cocok dengan pola `items.{angka}.search`: jalankan pencarian barang untuk baris itu.
   - Jika panjang teks kurang dari 2 huruf, kosongkan `results` baris itu.
-  - Jika 2 huruf atau lebih: `Product::selectable()->with('currentPrice')->where('name', 'like', '%'.$value.'%')->orderBy('name')->limit(8)->get()`. Ubah tiap barang menjadi array `['id', 'name', 'unit', 'price']`, dengan `price` dari `currentPrice?->sell_price`.
+  - Jika 2 huruf atau lebih: `Product::selectable()->with('currentPrice')->where('name', 'like', '%'.$value.'%')->orderBy('name')->limit(8)->get()`. Ubah tiap barang menjadi array `['id', 'name', 'unit', 'price']`, dengan `price` dari `currentPrice?->sell_price`. (Catatan: tugas 23 mengubahnya menjadi maksimal 20 hasil yang dikelompokkan per satuan.)
 - Jika `$property` adalah `customerSearch`: cari pelanggan.
   - Kurang dari 2 huruf: kosongkan `customerResults`.
   - 2 huruf atau lebih: cari di `name` dengan `like`. Jika hasil `Phone::normalize($value)` tidak `null`, cari juga `phone` dengan `like` memakai nomor yang sudah dinormalkan. Batasi 8 hasil. Simpan sebagai array `['id', 'name', 'phone']`.
@@ -197,7 +197,7 @@ Susunan dari atas ke bawah:
 
 - Tanggal: `input type="datetime-local"` dengan `wire:model="transactedAt"`.
 - Saluran: `select` dengan `wire:model="channel"`, pilihan dari `Channel::cases()` memakai `label()`.
-- Status bayar: `select` dengan `wire:model="paymentStatus"`.
+- Status bayar: `select` dengan `wire:model="paymentStatus"`. (Catatan: tugas 26 mengubahnya menjadi `wire:model.live` dan menambah kolom "Nominal dibayar" untuk status Sebagian.)
 
 **Kartu "Pelanggan"**
 
@@ -297,7 +297,7 @@ Semua tombol selain tombol simpan wajib `type="button"`, agar tidak ikut mengiri
 
 - Jangan memakai komponen satu file (awalan emoji petir) atau multi-file.
 - Jangan memakai `Route::livewire()`.
-- Jangan menulis JavaScript sendiri. Jangan memasang Alpine. (Pengecualian yang diizinkan hanya `resources/js/rupiah.js` dari tugas 13, `resources/js/check-all.js` dari tugas 19, dan `resources/js/clear-default.js` dari tugas 21.)
+- Jangan menulis JavaScript sendiri. Jangan memasang Alpine. (Pengecualian yang diizinkan hanya `resources/js/rupiah.js` dari tugas 13, `resources/js/check-all.js` dari tugas 19, `resources/js/clear-default.js` dari tugas 21, dan `resources/js/live-clock.js` dari tugas 25.)
 - Jangan menyalin rumus subtotal atau aturan harga ke dalam komponen.
 - Jangan membuat fitur simpan sebagai draf. Fitur itu dibuat nanti di tugas 15 dan 16.
 - Jangan membuat komponen Livewire lain untuk baris atau pencarian. Cukup satu komponen.

@@ -7,8 +7,13 @@
                 <h2 class="h6">Data transaksi</h2>
                 <div class="mb-2">
                     <label for="transactedAt" class="form-label">Tanggal</label>
-                    <input type="datetime-local" id="transactedAt" class="form-control @error('transacted_at') is-invalid @enderror" wire:model="transactedAt">
+                    <input type="datetime-local" id="transactedAt" class="form-control @error('transacted_at') is-invalid @enderror" wire:model.live="transactedAt" @if ($autoTime) data-live-clock @endif>
                     @error('transacted_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    @if ($autoTime)
+                        <div class="form-text">Mengikuti waktu sekarang. Ubah jika transaksi terjadi di waktu lain.</div>
+                    @else
+                        <button type="button" class="btn btn-link btn-sm px-0" wire:click="useCurrentTime">Pakai waktu sekarang</button>
+                    @endif
                 </div>
                 <div class="row g-2">
                     <div class="col-6">
@@ -21,13 +26,21 @@
                     </div>
                     <div class="col-6">
                         <label for="paymentStatus" class="form-label">Status bayar</label>
-                        <select id="paymentStatus" class="form-select" wire:model="paymentStatus">
+                        <select id="paymentStatus" class="form-select" wire:model.live="paymentStatus">
                             @foreach ($paymentStatuses as $option)
                                 <option value="{{ $option->value }}">{{ $option->label() }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
+                @if ($paymentStatus === 'partial')
+                    <div class="mt-2">
+                        <label for="paidAmount" class="form-label">Nominal dibayar</label>
+                        <input type="text" id="paidAmount" class="form-control @error('paid_amount') is-invalid @enderror" wire:model.live.blur="paidAmount" inputmode="numeric" autocomplete="off" data-rupiah>
+                        @error('paid_amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <div class="form-text">Kurang: <strong>{{ \App\Support\Format::rupiah($this->remaining()) }}</strong></div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -40,7 +53,7 @@
                         <div class="list-group mt-2">
                             @foreach ($customerResults as $c)
                                 <button type="button" class="list-group-item list-group-item-action" wire:key="cust-{{ $c['id'] }}" wire:click="selectCustomer({{ $c['id'] }})">
-                                    {{ $c['name'] }}@if ($c['phone']) <small class="text-muted">({{ $c['phone'] }})</small>@endif
+                                    {{ $c['label'] }}@if ($c['phone']) <small class="text-muted">({{ $c['phone'] }})</small>@endif
                                 </button>
                             @endforeach
                         </div>
@@ -56,7 +69,7 @@
                 @else
                     <div class="mb-2">
                         <label for="customerName" class="form-label">Nama</label>
-                        <input type="text" id="customerName" class="form-control @error('customer.name') is-invalid @enderror" wire:model="customerName">
+                        <input type="text" id="customerName" class="form-control text-uppercase @error('customer.name') is-invalid @enderror" autocapitalize="characters" wire:model="customerName">
                         @error('customer.name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="mb-2">
@@ -76,13 +89,7 @@
                         <input type="text" class="form-control @error("items.$i.search") is-invalid @enderror" aria-label="Cari barang" placeholder="Ketik nama barang" wire:model.live.debounce.300ms="items.{{ $i }}.search">
                         @error("items.$i.search") <div class="invalid-feedback">{{ $message }}</div> @enderror
                         @if (count($row['results']) > 0)
-                            <div class="list-group mt-2">
-                                @foreach ($row['results'] as $r)
-                                    <button type="button" class="list-group-item list-group-item-action" wire:key="res-{{ $row['key'] }}-{{ $r['id'] }}" wire:click="selectProduct({{ $i }}, {{ $r['id'] }})">
-                                        {{ $r['name'] }} <small class="text-muted">{{ $r['unit'] }} - {{ \App\Support\Format::rupiah($r['price']) }}</small>
-                                    </button>
-                                @endforeach
-                            </div>
+                            @include('livewire._product-results', ['results' => $row['results'], 'i' => $i, 'keyPrefix' => 'res-'.$row['key']])
                         @endif
                         @if (mb_strlen(trim($row['search'])) >= 2)
                             <button type="button" class="btn btn-outline-primary btn-sm mt-2" wire:click="startNewProduct({{ $i }})">+ Tambah "{{ $row['search'] }}" sebagai barang baru</button>
@@ -129,13 +136,7 @@
                             @if (count($row['results']) > 0)
                                 <div class="alert alert-warning">
                                     <strong>Barang yang mirip:</strong>
-                                    <div class="list-group mt-2">
-                                        @foreach ($row['results'] as $r)
-                                            <button type="button" class="list-group-item list-group-item-action" wire:key="sim-{{ $row['key'] }}-{{ $r['id'] }}" wire:click="selectProduct({{ $i }}, {{ $r['id'] }})">
-                                                {{ $r['name'] }} <small class="text-muted">{{ $r['unit'] }} - {{ \App\Support\Format::rupiah($r['price']) }}</small>
-                                            </button>
-                                        @endforeach
-                                    </div>
+                                    @include('livewire._product-results', ['results' => $row['results'], 'i' => $i, 'keyPrefix' => 'sim-'.$row['key']])
                                 </div>
                             @endif
                         @endif
