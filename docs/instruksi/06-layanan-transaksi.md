@@ -191,6 +191,8 @@ Transaksi yang dibatalkan tetap ikut dihitung dalam urutan.
 
 ### 7. `updatePaymentStatus`
 
+Catatan: tugas 26 (`26-nominal-bayar-sebagian.md`) menambah parameter ketiga `?int $paidAmount = null` dan kolom `paid_amount`.
+
 - Jika status transaksi bukan `confirmed`, lempar `ValidationException::withMessages(['payment_status' => 'Status bayar hanya bisa diubah pada transaksi yang dikonfirmasi.'])`.
 - Ubah `payment_status`. Jangan mengubah kolom lain.
 - Kembalikan transaksi.
@@ -243,6 +245,6 @@ Transaksi yang dibatalkan tetap ikut dihitung dalam urutan.
 
 - Jangan membuat fitur ubah isi transaksi. Fitur itu dibuat nanti di tugas 15 dengan aturan yang jelas.
 - Jangan menghapus baris transaksi saat dibatalkan.
-- Jangan membuat tabel pembayaran atau cicilan.
+- Jangan membuat tabel pembayaran atau cicilan. (Tugas 26 hanya menambah satu kolom `paid_amount`, bukan tabel.)
 - Jangan mencatat stok.
 - Jangan memakai `float` untuk menyimpan uang. `round()` hanya dipakai saat menghitung subtotal.

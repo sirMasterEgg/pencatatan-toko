@@ -4,7 +4,7 @@ Aplikasi pencatatan penjualan untuk satu toko kecil, dipakai pemilik lewat HP. P
 
 ## Cara kerja di proyek ini
 
-- Pekerjaan dibagi menjadi file tugas di `docs/instruksi/`, bernomor `01` sampai `21`. Kerjakan satu file tugas dalam satu waktu, sesuai urutan.
+- Pekerjaan dibagi menjadi file tugas di `docs/instruksi/`, bernomor `01` sampai `26`. Kerjakan satu file tugas dalam satu waktu, sesuai urutan.
 - Sebelum mengerjakan tugas, baca `docs/instruksi/00-aturan-umum.md`. File itu memuat kamus istilah lengkap dan daftar semua rute.
 - Kerjakan persis yang tertulis di file tugas. Jangan menambah fitur, paket, tabel, atau kolom.
 - Jika instruksi tidak bisa dijalankan atau saling bertentangan, berhenti dan laporkan. Jangan mengarang jalan keluar.
@@ -59,7 +59,8 @@ Livewire 4:
 - Normalkan nomor HP dengan `App\Support\Phone::normalize()` sebelum disimpan atau dicari.
 - Rapikan isian form dengan `App\Support\Parse::quantity()` (jumlah, koma = desimal) dan `Parse::rupiah()` (uang, titik ribuan dibuang).
 - Kolom uang: `type="text"`, `inputmode="numeric"`, `data-rupiah`, nilai awal `Format::thousands()`. Jangan `type="number"` untuk uang atau jumlah.
-- Nama barang huruf besar lewat `ProductService::normalizeName()`.
+- Nama barang huruf besar lewat `ProductService::normalizeName()`. Nama dan alamat pelanggan huruf besar lewat `CustomerService::normalizeText()`.
+- Tampilkan pelanggan dengan `$customer->displayName()` ("NAMA - ALAMAT").
 - Zona waktu `Asia/Jakarta`. Format tanggal di layar `d/m/Y H:i`.
 - Nilai status memakai enum di `app/Enums`, masing-masing punya `label()`.
 - Controller tipis: validasi, panggil service atau model, kembalikan view atau redirect.
@@ -84,6 +85,8 @@ Livewire 4:
 13. Hanya draf yang boleh dihapus. Draf tidak masuk laporan.
 14. Urutan harga di nota: harga khusus per nota, lalu harga pelanggan, lalu harga umum. `list_price` = salinan harga umum, `customer_price` = salinan harga pelanggan.
 15. Ubah harga massal tidak berlaku mundur dan ditolak seluruhnya jika ada harga di bawah Rp0.
+16. `transactions.paid_amount`: Lunas = total, Belum bayar = 0, Sebagian = isian (lebih dari 0, kurang dari total). Piutang = total dikurangi `paid_amount`. Tidak ada tabel cicilan.
+17. Form transaksi baru memakai waktu otomatis (`$autoTime`): disimpan dengan `now()` saat simpan, kecuali tanggal diubah manual.
 
 ## Batas tanggung jawab kelas
 
@@ -91,7 +94,7 @@ Livewire 4:
 |---|---|
 | `App\Services\TransactionService` | membuat (`confirmed` atau `draft`), mengubah, dan menghapus draf `Transaction` dan `TransactionItem`, membatalkan, mengubah status bayar, rumus subtotal |
 | `App\Services\ProductService` | membuat `Product` dan `ProductPrice`, merapikan nama barang (`normalizeName`) |
-| `App\Services\CustomerService` | mencari atau membuat `Customer` dari form transaksi |
+| `App\Services\CustomerService` | mencari atau membuat `Customer` dari form transaksi, merapikan nama dan alamat (`normalizeText`) |
 | `App\Services\CustomerPriceService` | membaca dan membuat `CustomerPrice` (harga pelanggan) |
 | `App\Services\BulkPriceService` | menghitung dan menyimpan ubah harga massal, lewat `ProductService` dan `CustomerPriceService` |
 | `App\Support\Format` | `number_format` |
@@ -129,6 +132,7 @@ docs/instruksi/       file tugas
 | Harga pelanggan | `CustomerPrice` / `customer_prices`, salinan di item: `customer_price` |
 | Perlu dirapikan | `needs_review` |
 | Draf | `draft` |
+| Sudah dibayar | `paid_amount` |
 
 Kamus lengkap ada di `docs/instruksi/00-aturan-umum.md`.
 

@@ -37,7 +37,7 @@ Kembalikan array dengan kunci berikut:
 | `revenue` | jumlah `total` |
 | `transaction_count` | jumlah transaksi |
 | `average` | `revenue` dibagi `transaction_count`, dibulatkan ke integer. `0` jika tidak ada transaksi |
-| `unpaid_total` | jumlah `total` dari transaksi dengan `payment_status` `unpaid` atau `partial` |
+| `unpaid_total` | jumlah `total` dari transaksi dengan `payment_status` `unpaid` atau `partial`. Sejak tugas 26: dikurangi jumlah `paid_amount` |
 | `unpaid_count` | jumlah transaksi dengan `payment_status` `unpaid` atau `partial` |
 | `cancelled_count` | jumlah transaksi berstatus `cancelled` pada tanggal itu |
 | `by_channel` | array per saluran: `channel` (enum `Channel`), `count`, `revenue`. Sertakan ketiga saluran walaupun nilainya 0 |
